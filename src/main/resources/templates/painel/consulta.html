@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Consulta')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4 conteudo-estreito">
+    <a th:href="@{/painel}" class="link-voltar"><i class="bi bi-arrow-left" aria-hidden="true"></i> Painel</a>
+    <h1 class="titulo-pagina">Pergunte ao Denarco</h1>
+    <p class="subtitulo">Escreva como você falaria. O sistema mostra o que entendeu antes de mostrar o resultado.</p>
+
+    <form th:action="@{/consulta}" method="get" class="consulta-rapida mb-3" role="search">
+        <label for="pergunta" class="visually-hidden">Sua pergunta</label>
+        <div class="d-flex gap-2">
+            <input id="pergunta" name="q" class="form-control" th:value="${q}" autofocus
+                   placeholder="Ex.: buracos abertos este mês no Centro">
+            <button type="submit" class="btn btn-primary">Consultar</button>
+        </div>
+    </form>
+
+    <div class="d-flex flex-wrap gap-2 mb-4" th:if="${resultado == null}">
+        <span class="small text-body-secondary w-100">Experimente:</span>
+        <a class="aba" th:href="@{/consulta(q='iluminação atrasada')}">iluminação atrasada</a>
+        <a class="aba" th:href="@{/consulta(q='buracos abertos este mês')}">buracos abertos este mês</a>
+        <a class="aba" th:href="@{/consulta(q='concluídas esta semana')}">concluídas esta semana</a>
+        <a class="aba" th:href="@{/consulta(q='mais apoiadas no Centro')}">mais apoiadas no Centro</a>
+        <a class="aba" th:href="@{/consulta(q='sem responsável')}">sem responsável</a>
+    </div>
+
+    <th:block th:if="${resultado != null}">
+        <section class="cartao mb-3" aria-labelledby="titulo-entendi">
+            <h2 class="titulo-secao mb-2" id="titulo-entendi">O que eu entendi</h2>
+            <div class="d-flex flex-wrap gap-2">
+                <span class="etiqueta status-encaminhada" th:each="e : ${resultado.entendido()}" th:text="${e}">Tipo: Poste apagado</span>
+            </div>
+            <p class="small text-danger mt-2 mb-0" th:each="a : ${resultado.avisos()}" th:text="${a}"></p>
+            <p class="small text-body-secondary mt-2 mb-0">
+                Não era isso? Reescreva usando o tipo de problema, a situação (abertas, atrasadas, concluídas),
+                o bairro ou o período (hoje, esta semana, este mês, últimos 15 dias).</p>
+        </section>
+
+        <div class="d-flex align-items-baseline gap-2 mb-3">
+            <span class="numero-destaque" th:text="${resultado.total()}">4</span>
+            <span class="rotulo-numero" th:text="${resultado.total() == 1} ? 'demanda encontrada' : 'demandas encontradas'">demandas</span>
+        </div>
+
+        <div class="lista-demandas" th:unless="${#lists.isEmpty(resultado.demandas())}">
+            <th:block th:each="d : ${resultado.demandas()}">
+                <a th:replace="~{fragmentos :: itemFila(${d})}"></a>
+            </th:block>
+        </div>
+        <p class="small text-body-secondary mt-2" th:if="${resultado.total() > #lists.size(resultado.demandas())}"
+           th:text="|Mostrando as ${#lists.size(resultado.demandas())} primeiras.|"></p>
+        <div class="cartao vazio" th:if="${resultado.total() == 0}">
+            <i class="bi bi-search" aria-hidden="true"></i>
+            <p class="mb-0">Nenhuma demanda com esses filtros.</p>
+        </div>
+    </th:block>
+
+    <p class="small text-body-secondary mt-4">A consulta usa regras simples e um dicionário de palavras, sem inteligência
+        artificial. Por isso ela sempre mostra o que entendeu: a resposta pode ser conferida.</p>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

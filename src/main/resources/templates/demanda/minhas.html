@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Minhas demandas')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4 conteudo-estreito">
+    <h1 class="titulo-pagina">Minhas demandas</h1>
+    <p class="subtitulo" th:text="${#lists.size(demandas)} == 1 ? '1 demanda registrada' : ${#lists.size(demandas)} + ' demandas registradas'">
+        3 demandas registradas</p>
+
+    <div class="lista-demandas" th:unless="${#lists.isEmpty(demandas)}">
+        <th:block th:each="d : ${demandas}">
+            <article th:replace="~{fragmentos :: cartaoDemanda(${d}, ${#temporals.format(d.criadaEm, 'dd/MM/yyyy')}, null, null)}"></article>
+        </th:block>
+    </div>
+
+    <div class="cartao vazio" th:if="${#lists.isEmpty(demandas)}">
+        <i class="bi bi-inbox" aria-hidden="true"></i>
+        <p>Você ainda não registrou nenhuma demanda.</p>
+        <a class="btn btn-primary" th:href="@{/demandas/nova}">Relatar um problema</a>
+    </div>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

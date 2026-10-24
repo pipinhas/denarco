@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Configurações')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <th:block th:replace="~{fragmentos :: mensagens}"></th:block>
+    <h1 class="titulo-pagina">Configurações</h1>
+    <p class="subtitulo">Nada é apagado: o que for desativado some das telas, mas continua no histórico.</p>
+
+    <div class="row g-4">
+        <section class="col-lg-4" aria-labelledby="titulo-setores">
+            <div class="cartao">
+                <h2 class="titulo-secao mb-3" id="titulo-setores">Setores</h2>
+                <ul class="lista-simples">
+                    <li th:each="s : ${setores}">
+                        <span><span th:text="${s.nome}" th:classappend="${!s.ativo} ? 'text-body-secondary text-decoration-line-through'">Drenagem</span>
+                            <span class="etiqueta status-cancelada ms-1" th:unless="${s.ativo}">Inativo</span></span>
+                        <form th:action="@{/admin/setores/{id}/ativo(id=${s.id})}" method="post">
+                            <button type="submit" class="btn btn-sm btn-outline-secondary" th:text="${s.ativo} ? 'Desativar' : 'Ativar'">Desativar</button>
+                        </form>
+                    </li>
+                </ul>
+                <form th:action="@{/admin/setores}" method="post" class="d-flex gap-2 mt-3">
+                    <label for="novo-setor" class="visually-hidden">Nome do novo setor</label>
+                    <input id="novo-setor" name="nome" class="form-control" placeholder="Novo setor" required>
+                    <button type="submit" class="btn btn-primary">Adicionar</button>
+                </form>
+            </div>
+        </section>
+
+        <section class="col-lg-8" aria-labelledby="titulo-categorias">
+            <div class="cartao">
+                <h2 class="titulo-secao mb-1" id="titulo-categorias">Tipos de problema</h2>
+                <p class="small text-body-secondary">O setor padrão recebe a demanda automaticamente; o prazo é a sugestão na hora de encaminhar.
+                    Sem setor padrão, a demanda vai para a triagem geral.</p>
+
+                <div class="linha-categoria" th:each="c : ${categorias}" th:classappend="${!c.ativa} ? 'inativa'">
+                    <form th:action="@{/admin/categorias/{id}(id=${c.id})}" method="post" class="grade-categoria">
+                        <span class="icone-categoria" aria-hidden="true"><i th:class="|bi ${c.icone}|"></i></span>
+                        <span class="fw-semibold nome-categoria">
+                            <span th:text="${c.nome}">Poste apagado</span>
+                            <span class="etiqueta status-cancelada ms-1" th:unless="${c.ativa}">Inativo</span></span>
+                        <input type="hidden" name="icone" th:value="${c.icone}">
+                        <div>
+                            <label class="form-label small mb-1" th:for="|setor-${c.id}|">Setor padrão</label>
+                            <select class="form-select form-select-sm" th:id="|setor-${c.id}|" name="setorPadraoId">
+                                <option value="">Triagem geral</option>
+                                <option th:each="s : ${setoresAtivos}" th:value="${s.id}" th:text="${s.nome}"
+                                        th:selected="${c.setorPadrao != null and c.setorPadrao.id == s.id}">Drenagem</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="form-label small mb-1" th:for="|prazo-${c.id}|">Prazo (dias)</label>
+                            <input type="number" min="1" max="365" class="form-control form-control-sm" th:id="|prazo-${c.id}|"
+                                   name="prazoDias" th:value="${c.prazoPadraoDias}">
+                        </div>
+                        <button type="submit" class="btn btn-sm btn-outline-primary">Salvar</button>
+                    </form>
+                    <form th:action="@{/admin/categorias/{id}/ativa(id=${c.id})}" method="post">
+                        <button type="submit" class="btn btn-sm btn-link" th:text="${c.ativa} ? 'Desativar' : 'Ativar'">Desativar</button>
+                    </form>
+                </div>
+
+                <h3 class="h6 mt-4">Novo tipo de problema</h3>
+                <form th:action="@{/admin/categorias}" method="post" class="row g-2 align-items-end">
+                    <div class="col-md-4">
+                        <label for="nova-categoria" class="form-label">Nome</label>
+                        <input id="nova-categoria" name="nome" class="form-control" required>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="novo-icone" class="form-label">Ícone</label>
+                        <select id="novo-icone" name="icone" class="form-select">
+                            <option th:each="i : ${icones}" th:value="${i}" th:text="${i.replace('bi-', '')}">cone-striped</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="novo-setor-padrao" class="form-label">Setor padrão</label>
+                        <select id="novo-setor-padrao" name="setorPadraoId" class="form-select">
+                            <option value="">Triagem geral</option>
+                            <option th:each="s : ${setoresAtivos}" th:value="${s.id}" th:text="${s.nome}">Drenagem</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label for="novo-prazo" class="form-label">Prazo</label>
+                        <input id="novo-prazo" name="prazoDias" type="number" min="1" max="365" value="10" class="form-control">
+                    </div>
+                    <div class="col-12"><button type="submit" class="btn btn-primary">Adicionar tipo de problema</button></div>
+                </form>
+            </div>
+        </section>
+    </div>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

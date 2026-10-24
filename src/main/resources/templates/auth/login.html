@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Entrar')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<div class="tela-acesso">
+    <aside th:replace="~{fragmentos :: painelMarca}"></aside>
+
+    <main class="area-formulario" id="conteudo">
+        <div th:replace="~{fragmentos :: topoAcesso}"></div>
+        <div class="conteudo">
+            <h1 class="titulo-pagina">Entrar</h1>
+            <p class="subtitulo">Use o e-mail e a senha da sua conta.</p>
+
+            <div class="alert alert-success" role="status" th:if="${mensagem}" th:text="${mensagem}"></div>
+            <div class="alert alert-danger" role="alert" th:if="${param.erro}">
+                E-mail ou senha incorretos. Confira e tente de novo.</div>
+            <div class="alert alert-info" role="status" th:if="${param.saiu}">Você saiu da sua conta.</div>
+
+            <form th:action="@{/login}" method="post">
+                <div class="mb-3">
+                    <label for="email" class="form-label">E-mail</label>
+                    <input type="email" id="email" name="email" class="form-control" th:value="${email}"
+                           autocomplete="email" required autofocus>
+                </div>
+                <div class="mb-2">
+                    <label for="senha" class="form-label">Senha</label>
+                    <div class="input-group">
+                        <input type="password" id="senha" name="senha" class="form-control"
+                               autocomplete="current-password" required>
+                        <button type="button" class="btn btn-outline-secondary" data-mostrar-senha="senha"
+                                aria-label="Mostrar senha"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+                <div class="text-end mb-4"><a th:href="@{/senha/esqueci}">Esqueci minha senha</a></div>
+                <button type="submit" class="btn btn-primary btn-acao w-100">Entrar</button>
+            </form>
+
+            <div class="separador">Ainda não tem conta?</div>
+            <a class="btn btn-outline-primary btn-acao w-100 mb-2" th:href="@{/cadastro}">
+                <i class="bi bi-person-plus" aria-hidden="true"></i> Criar conta</a>
+            <a class="btn btn-link w-100" th:href="@{/cadastro/corporativo}">
+                <i class="bi bi-building" aria-hidden="true"></i> Sou servidor da Prefeitura: criar conta corporativa</a>
+
+            <!-- Só no modo demonstração: atalhos para entrar com as contas fictícias. -->
+            <div class="cartao mt-4" th:if="${@environment.getProperty('app.modo-demo') == 'true'}">
+                <p class="fw-semibold mb-2"><i class="bi bi-magic" aria-hidden="true"></i> Contas de demonstração</p>
+                <div class="d-flex flex-wrap gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-demo="cidadao@demo.com">Cidadão</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-demo="servidor@demo.com">Servidor</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-demo="gestor@demo.com">Gestor</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-demo="admin@demo.com">Admin</button>
+                </div>
+                <p class="small text-body-secondary mt-2 mb-0">Todas usam a senha demo1234.</p>
+            </div>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<script>
+    document.querySelectorAll('[data-demo]').forEach(function (botao) {
+        botao.addEventListener('click', function () {
+            document.getElementById('email').value = botao.dataset.demo;
+            document.getElementById('senha').value = 'demo1234';
+            document.querySelector('form').submit();
+        });
+    });
+</script>
+</body>
+</html>

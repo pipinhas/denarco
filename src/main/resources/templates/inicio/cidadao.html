@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Início')}"></head>
+<body th:attr="data-perfil=${usuarioLogado.perfil.name()},data-mostrar-tutorial=${mostrarTutorial}">
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <th:block th:replace="~{fragmentos :: mensagens}"></th:block>
+
+    <h1 class="titulo-pagina">Olá, <span th:text="${usuarioLogado.primeiroNome}">Maria</span></h1>
+    <p class="subtitulo">Acompanhe suas demandas e apoie as do seu bairro.</p>
+
+    <div class="alert alert-warning d-flex gap-2" role="status" th:if="${usuario.pendente}">
+        <i class="bi bi-hourglass-split" aria-hidden="true"></i>
+        <div>Seu pedido de conta corporativa (<span th:text="${usuario.atuacao.descricao}">Equipe de campo</span>)
+            está esperando a aprovação de um gestor. Enquanto isso, você usa o sistema como cidadão.</div>
+    </div>
+
+    <section id="resumo" class="row g-2 g-md-3 mb-4" aria-label="Resumo das suas demandas">
+        <div class="col-4">
+            <div class="cartao cartao-numero">
+                <div class="numero-destaque" th:text="${resumo.abertas()}">3</div>
+                <div class="rotulo-numero">em aberto</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="cartao cartao-numero">
+                <div class="numero-destaque text-success" th:text="${resumo.concluidas()}">1</div>
+                <div class="rotulo-numero">resolvidas</div>
+            </div>
+        </div>
+        <div class="col-4">
+            <div class="cartao cartao-numero">
+                <div class="numero-destaque" th:text="${resumo.apoiosRecebidos()}">12</div>
+                <div class="rotulo-numero">apoios</div>
+            </div>
+        </div>
+    </section>
+
+    <div class="row g-4">
+        <section class="col-lg-6" id="minhas-abertas" aria-labelledby="titulo-minhas">
+            <div class="cabecalho-secao">
+                <h2 class="titulo-secao" id="titulo-minhas">Minhas demandas em aberto</h2>
+                <a th:href="@{/demandas/minhas}">Ver todas</a>
+            </div>
+            <div class="lista-demandas" th:unless="${#lists.isEmpty(minhasAbertas)}">
+                <th:block th:each="d : ${minhasAbertas}">
+                    <article th:replace="~{fragmentos :: cartaoDemanda(${d}, null, null, '/')}"></article>
+                </th:block>
+            </div>
+            <div class="cartao vazio" th:if="${#lists.isEmpty(minhasAbertas)}">
+                <i class="bi bi-emoji-smile" aria-hidden="true"></i>
+                <p>Você não tem demandas em aberto.</p>
+                <a class="btn btn-primary" th:href="@{/demandas/nova}">Relatar um problema</a>
+            </div>
+        </section>
+
+        <section class="col-lg-6" id="outras-demandas" aria-labelledby="titulo-outras">
+            <div class="cabecalho-secao">
+                <h2 class="titulo-secao" id="titulo-outras" th:text="${perto != null} ? 'Perto de você' : 'Mais apoiadas na cidade'">
+                    Mais apoiadas na cidade</h2>
+                <button type="button" class="btn btn-sm btn-outline-primary" id="btn-perto" th:if="${perto == null}">
+                    <i class="bi bi-crosshair" aria-hidden="true"></i> Perto de mim</button>
+                <a th:if="${perto != null}" th:href="@{/}">Ver mais apoiadas</a>
+            </div>
+            <p class="small text-body-secondary" id="aviso-local" role="status" aria-live="polite"></p>
+
+            <div class="lista-demandas" th:if="${perto != null and !#lists.isEmpty(perto)}">
+                <!-- O Thymeleaf não deixa chamar beans dentro dos parâmetros do fragmento: calculamos antes, no th:with. -->
+                <th:block th:each="p : ${perto}"
+                          th:with="distancia=${@formato.distancia(p.distanciaMetros())}, apoiado=${idsApoiados.contains(p.demanda().id)}">
+                    <article th:replace="~{fragmentos :: cartaoDemanda(${p.demanda()}, ${distancia}, ${apoiado}, '/')}"></article>
+                </th:block>
+            </div>
+            <div class="lista-demandas" th:if="${perto == null and !#lists.isEmpty(outras)}">
+                <th:block th:each="d : ${outras}">
+                    <article th:replace="~{fragmentos :: cartaoDemanda(${d}, null, ${idsApoiados.contains(d.id)}, '/')}"></article>
+                </th:block>
+            </div>
+            <div class="cartao vazio" th:if="${#lists.isEmpty(outras)}">
+                <i class="bi bi-geo" aria-hidden="true"></i>
+                <p>Nenhuma demanda aberta por aqui.</p>
+            </div>
+        </section>
+    </div>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<th:block th:replace="~{fragmentos :: tutorial(${mostrarTutorial})}"></th:block>
+<script>
+    // "Perto de mim": pede a localização ao navegador e recarrega a tela com ela.
+    const botaoPerto = document.getElementById('btn-perto');
+    if (botaoPerto) {
+        botaoPerto.addEventListener('click', function () {
+            const aviso = document.getElementById('aviso-local');
+            if (!navigator.geolocation) {
+                aviso.textContent = 'Seu navegador não informa a localização.';
+                return;
+            }
+            aviso.textContent = 'Procurando sua localização...';
+            navigator.geolocation.getCurrentPosition(function (pos) {
+                window.location.href = '/?lat=' + pos.coords.latitude.toFixed(5) + '&lng=' + pos.coords.longitude.toFixed(5);
+            }, function () {
+                aviso.textContent = 'Não conseguimos sua localização. Mostrando as mais apoiadas.';
+            }, { enableHighAccuracy: true, timeout: 10000 });
+        });
+    }
+</script>
+</body>
+</html>

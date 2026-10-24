@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Fila de atendimento')}"></head>
+<body th:attr="data-perfil=${usuarioLogado.perfil.name()},data-mostrar-tutorial=${mostrarTutorial}">
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <th:block th:replace="~{fragmentos :: mensagens}"></th:block>
+
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-2 mb-3">
+        <div>
+            <h1 class="titulo-pagina">Fila de atendimento</h1>
+            <p class="subtitulo mb-0" th:text="${tituloFila}">Iluminação pública</p>
+        </div>
+        <a class="btn btn-primary d-none d-lg-inline-flex align-items-center gap-1" th:href="@{/atendimento/registrar}">
+            <i class="bi bi-telephone-plus" aria-hidden="true"></i> Registrar atendimento</a>
+    </div>
+
+    <!-- Números grandes: cada card também é um atalho para a aba correspondente. -->
+    <section id="resumo-fila" class="row g-2 g-md-3 mb-4" aria-label="Resumo da fila">
+        <div class="col-6 col-md-3">
+            <a class="cartao cartao-numero cartao-link" th:href="@{/atendimento(aba='EM_ABERTO',setorId=${filtro.setorId})}">
+                <div class="numero-destaque" th:text="${resumo.emAberto()}">12</div>
+                <div class="rotulo-numero">em aberto</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a class="cartao cartao-numero cartao-link" th:href="@{/atendimento(aba='SEM_RESPONSAVEL',setorId=${filtro.setorId})}">
+                <div class="numero-destaque" th:text="${resumo.semResponsavel()}">4</div>
+                <div class="rotulo-numero">sem responsável</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a class="cartao cartao-numero cartao-link" th:href="@{/atendimento(aba='ATRASADAS',setorId=${filtro.setorId})}">
+                <div class="numero-destaque text-danger" th:text="${resumo.atrasadas()}">2</div>
+                <div class="rotulo-numero">atrasadas</div>
+            </a>
+        </div>
+        <div class="col-6 col-md-3">
+            <a class="cartao cartao-numero cartao-link" th:href="@{/atendimento(aba='CONCLUIDAS',setorId=${filtro.setorId})}">
+                <div class="numero-destaque text-success" th:text="${resumo.concluidas30Dias()}">7</div>
+                <div class="rotulo-numero">concluídas em 30 dias</div>
+            </a>
+        </div>
+    </section>
+
+    <nav class="abas mb-3" aria-label="Partes da fila">
+        <a th:each="a : ${abas}" th:text="${a.descricao}" class="aba"
+           th:classappend="${filtro.aba == a} ? 'ativa'" th:attr="aria-current=${filtro.aba == a} ? 'page' : null"
+           th:href="@{/atendimento(aba=${a},categoriaId=${filtro.categoriaId},bairro=${filtro.bairro},setorId=${filtro.setorId})}">Em aberto</a>
+    </nav>
+
+    <details class="filtros mb-3" th:open="${filtro.categoriaId != null or (filtro.bairro != null and !#strings.isEmpty(filtro.bairro))}">
+        <summary><i class="bi bi-funnel" aria-hidden="true"></i> Filtros</summary>
+        <form th:action="@{/atendimento}" method="get" class="row g-2 mt-1 align-items-end">
+            <input type="hidden" name="aba" th:value="${filtro.aba}">
+            <div class="col-md-4">
+                <label for="filtro-categoria" class="form-label">Tipo de problema</label>
+                <select id="filtro-categoria" name="categoriaId" class="form-select">
+                    <option value="">Todos</option>
+                    <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nome}"
+                            th:selected="${filtro.categoriaId == c.id}">Poste apagado</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label for="filtro-bairro" class="form-label">Bairro</label>
+                <input id="filtro-bairro" name="bairro" class="form-control" th:value="${filtro.bairro}" placeholder="Ex.: Centro">
+            </div>
+            <div class="col-md-3" th:if="${enxergaTodos}">
+                <label for="filtro-setor" class="form-label">Setor</label>
+                <select id="filtro-setor" name="setorId" class="form-select">
+                    <option value="">Todos</option>
+                    <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}"
+                            th:selected="${filtro.setorId == s.id}">Drenagem</option>
+                </select>
+            </div>
+            <div class="col-md-2 d-flex gap-2">
+                <button type="submit" class="btn btn-primary flex-grow-1">Filtrar</button>
+                <a class="btn btn-outline-secondary" th:href="@{/atendimento(aba=${filtro.aba})}" title="Limpar filtros">
+                    <i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Limpar filtros</span></a>
+            </div>
+        </form>
+    </details>
+
+    <p class="small text-body-secondary" th:if="${pagina.totalElements > 0}"
+       th:text="|${pagina.totalElements} ${pagina.totalElements == 1 ? 'demanda' : 'demandas'} · ${filtro.aba.name() == 'CONCLUIDAS' ? 'mais recentes primeiro' : 'mais prioritárias primeiro'}|">
+        12 demandas</p>
+
+    <div class="lista-demandas" th:unless="${pagina.empty}">
+        <th:block th:each="d : ${pagina.content}">
+            <a th:replace="~{fragmentos :: itemFila(${d})}"></a>
+        </th:block>
+    </div>
+
+    <div class="cartao vazio" th:if="${pagina.empty}">
+        <i class="bi bi-check2-all" aria-hidden="true"></i>
+        <p class="mb-0">Nada por aqui. Bom trabalho!</p>
+    </div>
+
+    <nav class="d-flex justify-content-between align-items-center mt-3" th:if="${pagina.totalPages > 1}" aria-label="Páginas">
+        <a class="btn btn-outline-secondary" th:classappend="${pagina.first} ? 'disabled'"
+           th:href="@{/atendimento(aba=${filtro.aba},categoriaId=${filtro.categoriaId},bairro=${filtro.bairro},setorId=${filtro.setorId},pagina=${pagina.number - 1})}">
+            <i class="bi bi-chevron-left" aria-hidden="true"></i> Anterior</a>
+        <span class="small" th:text="|Página ${pagina.number + 1} de ${pagina.totalPages}|">Página 1 de 3</span>
+        <a class="btn btn-outline-secondary" th:classappend="${pagina.last} ? 'disabled'"
+           th:href="@{/atendimento(aba=${filtro.aba},categoriaId=${filtro.categoriaId},bairro=${filtro.bairro},setorId=${filtro.setorId},pagina=${pagina.number + 1})}">
+            Próxima <i class="bi bi-chevron-right" aria-hidden="true"></i></a>
+    </nav>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<th:block th:replace="~{fragmentos :: tutorial(${mostrarTutorial})}"></th:block>
+</body>
+</html>

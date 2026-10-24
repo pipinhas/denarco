@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head(${demanda.protocolo})}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <a th:href="${podeAtender} ? @{/atendimento} : @{/}" class="link-voltar">
+        <i class="bi bi-arrow-left" aria-hidden="true"></i> <span th:text="${podeAtender} ? 'Fila' : 'Início'">Início</span></a>
+    <th:block th:replace="~{fragmentos :: mensagens}"></th:block>
+
+    <div class="alert alert-success d-flex gap-3 align-items-center" role="status" th:if="${criada}">
+        <i class="bi bi-check-circle-fill fs-2" aria-hidden="true"></i>
+        <div><strong>Demanda registrada!</strong> Guarde o protocolo para acompanhar:
+            <div class="protocolo-grande" th:text="${demanda.protocolo}">ARC-2026-000123</div></div>
+    </div>
+
+    <div class="cabecalho-demanda">
+        <span class="icone-categoria grande" aria-hidden="true"><i th:class="|bi ${demanda.categoria.icone}|"></i></span>
+        <div>
+            <h1 class="titulo-pagina mb-1" th:text="${demanda.categoria.nome}">Poste apagado</h1>
+            <div class="d-flex flex-wrap gap-2 align-items-center">
+                <span th:class="|etiqueta ${demanda.status.classeCss}|" th:text="${demanda.status.descricao}">Aberta</span>
+                <span class="etiqueta status-atrasada" th:if="${demanda.atrasada}">Atrasada</span>
+                <span class="small text-body-secondary">Protocolo <strong th:text="${demanda.protocolo}">ARC-2026-000123</strong></span>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-danger" role="alert" th:if="${demanda.riscoSeguranca and demanda.status.emAberto}">
+        <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i>
+        <strong>Risco à segurança.</strong> Em perigo imediato, ligue 193 (Bombeiros) ou 199 (Defesa Civil).
+    </div>
+
+    <div class="row g-4">
+        <div class="col-lg-8">
+            <div class="cartao mb-4">
+                <p class="descricao-demanda" th:text="${demanda.descricao}">Descrição</p>
+                <img th:if="${demanda.foto != null and podeVerPrivado}" class="foto-demanda"
+                     th:src="@{/demandas/{id}/foto(id=${demanda.id})}" alt="Foto enviada com a demanda">
+                <dl class="dados-demanda">
+                    <div><dt>Endereço</dt><dd th:text="${demanda.endereco ?: 'Não informado'}">Rua</dd></div>
+                    <div th:if="${demanda.bairro}"><dt>Bairro</dt><dd th:text="${demanda.bairro}">Centro</dd></div>
+                    <div th:if="${demanda.pontoReferencia}"><dt>Referência</dt><dd th:text="${demanda.pontoReferencia}"></dd></div>
+                    <div><dt>Registrada em</dt><dd th:text="${#temporals.format(demanda.criadaEm, 'dd/MM/yyyy HH:mm')}"></dd></div>
+                    <div><dt>Canal</dt><dd th:text="${demanda.canal.descricao}">Site</dd></div>
+                    <div th:if="${podeVerPrivado}">
+                        <dt th:text="${demanda.canal.name() == 'APP'} ? 'Quem registrou' : 'Registrada por'">Quem registrou</dt>
+                        <dd th:text="${demanda.autor.nome}">Maria</dd></div>
+                    <div th:if="${podeVerPrivado and !ehAutor and demanda.canal.name() == 'APP'}"><dt>Contato</dt>
+                        <dd><span th:text="${demanda.autor.telefone}"></span> · <span th:text="${demanda.autor.email}"></span></dd></div>
+                    <div th:if="${podeVerPrivado and (demanda.solicitanteNome != null or demanda.solicitanteTelefone != null)}">
+                        <dt>Quem entrou em contato</dt>
+                        <dd><span th:text="${demanda.solicitanteNome ?: 'Não informado'}"></span>
+                            <span th:if="${demanda.solicitanteTelefone}" th:text="|· ${demanda.solicitanteTelefone}|"></span></dd></div>
+                </dl>
+                <div id="mapa-detalhe" class="mapa mapa-pequeno mt-3" th:if="${demanda.temLocalNoMapa()}"
+                     th:attr="data-lat=${demanda.latitude},data-lng=${demanda.longitude}"
+                     role="region" aria-label="Mapa com o local da demanda"></div>
+            </div>
+
+            <section class="cartao" aria-labelledby="titulo-linha-tempo">
+                <h2 class="titulo-secao mb-3" id="titulo-linha-tempo">Linha do tempo</h2>
+                <ol class="linha-tempo">
+                    <li th:each="h : ${historico}">
+                        <span class="marcador-tempo" aria-hidden="true"><i th:class="|bi ${h.tipo.icone}|"></i></span>
+                        <div>
+                            <p class="mb-0" th:text="${h.descricao}">Demanda registrada.</p>
+                            <a th:if="${h.foto != null and podeVerPrivado}" th:href="@{/historico/{id}/foto(id=${h.id})}" target="_blank">
+                                <img class="foto-historico" th:src="@{/historico/{id}/foto(id=${h.id})}" alt="Foto do serviço registrado"></a>
+                            <p class="small text-body-secondary mb-0">
+                                <span th:text="${#temporals.format(h.criadoEm, 'dd/MM/yyyy HH:mm')}"></span> ·
+                                <span th:text="${h.usuario.perfil.name() == 'CIDADAO' and !podeVerPrivado} ? 'Cidadão' : ${h.usuario.nome}">Maria</span>
+                            </p>
+                        </div>
+                    </li>
+                </ol>
+            </section>
+        </div>
+
+        <!-- Para a equipe, a coluna de ações vem primeiro no celular. -->
+        <aside class="col-lg-4" th:classappend="${podeAtender} ? 'order-first order-lg-last'">
+
+            <section class="cartao cartao-acoes mb-3" th:if="${podeAtender and demanda.status.emAberto}" aria-labelledby="titulo-acoes">
+                <h2 class="titulo-secao mb-2" id="titulo-acoes"><i class="bi bi-tools" aria-hidden="true"></i> Ações da equipe</h2>
+
+                <p class="small mb-2" th:if="${podeGerir and demanda.setor == null}">
+                    Esta demanda ainda não tem setor. Use <strong>Transferir para um setor</strong> primeiro.</p>
+
+                <!-- Gestor: responsável e prazo (é a ação principal enquanto a demanda está aberta). -->
+                <details class="acao" th:if="${podeGerir and demanda.setor != null}" th:open="${demanda.status.name() == 'ABERTA'}">
+                    <summary th:text="${demanda.responsavel == null} ? 'Definir responsável e prazo' : 'Trocar responsável ou prazo'">
+                        Definir responsável e prazo</summary>
+                    <form th:action="@{/gestao/demandas/{id}/encaminhar(id=${demanda.id})}" method="post">
+                        <label for="responsavelId" class="form-label">Responsável</label>
+                        <select id="responsavelId" name="responsavelId" class="form-select" required>
+                            <option value="">Escolha</option>
+                            <option th:each="r : ${responsaveis}" th:value="${r.id}" th:text="${r.nome}"
+                                    th:selected="${demanda.responsavel != null and demanda.responsavel.id == r.id}">João</option>
+                        </select>
+                        <label for="prazo" class="form-label mt-2">Prazo</label>
+                        <input type="date" id="prazo" name="prazo" class="form-control" required
+                               th:min="${hoje}" th:value="${demanda.prazo ?: prazoSugerido}">
+                        <div class="form-text" th:text="|Sugestão para ${demanda.categoria.nome.toLowerCase()}: ${demanda.categoria.prazoPadraoDias} dias.|"></div>
+                        <button type="submit" class="btn btn-primary w-100 mt-3">Salvar</button>
+                    </form>
+                </details>
+
+                <form th:if="${demanda.status.name() == 'ENCAMINHADA'}" class="my-2"
+                      th:action="@{/atendimento/demandas/{id}/iniciar(id=${demanda.id})}" method="post">
+                    <button type="submit" class="btn btn-primary w-100">
+                        <i class="bi bi-play-fill" aria-hidden="true"></i> Iniciar atendimento</button>
+                </form>
+
+                <details class="acao" th:if="${demanda.status.name() != 'ABERTA'}" th:open="${demanda.status.name() == 'EM_ANDAMENTO'}">
+                    <summary>Concluir demanda</summary>
+                    <form th:action="@{/atendimento/demandas/{id}/concluir(id=${demanda.id})}" method="post" enctype="multipart/form-data">
+                        <label for="texto-conclusao" class="form-label">O que foi feito?</label>
+                        <textarea id="texto-conclusao" name="texto" class="form-control" rows="2" required
+                                  placeholder="Ex.: Lâmpada trocada e poste testado."></textarea>
+                        <label for="foto-conclusao" class="form-label mt-2">Foto do serviço <span class="opcional">(opcional)</span></label>
+                        <input type="file" id="foto-conclusao" name="foto" accept="image/*" class="form-control">
+                        <button type="submit" class="btn btn-success w-100 mt-3">
+                            <i class="bi bi-check2-circle" aria-hidden="true"></i> Concluir</button>
+                    </form>
+                </details>
+
+                <details class="acao">
+                    <summary>Registrar providência</summary>
+                    <form th:action="@{/atendimento/demandas/{id}/providencia(id=${demanda.id})}" method="post" enctype="multipart/form-data">
+                        <label for="texto-providencia" class="form-label">O que foi feito até agora?</label>
+                        <textarea id="texto-providencia" name="texto" class="form-control" rows="2" required
+                                  placeholder="Ex.: Equipe avaliou o local; peça encomendada."></textarea>
+                        <label for="foto-providencia" class="form-label mt-2">Foto <span class="opcional">(opcional)</span></label>
+                        <input type="file" id="foto-providencia" name="foto" accept="image/*" class="form-control">
+                        <button type="submit" class="btn btn-outline-primary w-100 mt-3">Registrar</button>
+                    </form>
+                </details>
+
+                <th:block th:if="${podeGerir}">
+                    <details class="acao" th:if="${demanda.status.name() == 'ABERTA' or demanda.status.name() == 'ENCAMINHADA'}"
+                             th:open="${demanda.setor == null}">
+                        <summary th:text="${demanda.setor == null} ? 'Transferir para um setor' : 'Transferir para outro setor'">Transferir</summary>
+                        <form th:action="@{/gestao/demandas/{id}/transferir(id=${demanda.id})}" method="post">
+                            <label for="setorId" class="form-label">Setor</label>
+                            <select id="setorId" name="setorId" class="form-select" required>
+                                <option value="">Escolha</option>
+                                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}"
+                                        th:disabled="${demanda.setor != null and demanda.setor.id == s.id}">Drenagem</option>
+                            </select>
+                            <label for="motivo-transferencia" class="form-label mt-2">Motivo</label>
+                            <input id="motivo-transferencia" name="motivo" class="form-control" required
+                                   placeholder="Ex.: o problema é de drenagem, não de pavimentação">
+                            <button type="submit" class="btn btn-outline-primary w-100 mt-3">Transferir</button>
+                        </form>
+                    </details>
+
+                    <details class="acao">
+                        <summary>Corrigir classificação</summary>
+                        <form th:action="@{/gestao/demandas/{id}/classificacao(id=${demanda.id})}" method="post">
+                            <label for="urgencia" class="form-label">Urgência</label>
+                            <select id="urgencia" name="urgencia" class="form-select">
+                                <option th:each="u : ${urgencias}" th:value="${u}" th:text="${u.descricao}"
+                                        th:selected="${u == demanda.urgencia}">Média</option>
+                            </select>
+                            <label for="alcance" class="form-label mt-2">Quem é afetado</label>
+                            <select id="alcance" name="alcance" class="form-select">
+                                <option th:each="a : ${alcances}" th:value="${a}" th:text="${a.descricao}"
+                                        th:selected="${a == demanda.alcance}">Uma rua</option>
+                            </select>
+                            <div class="form-check mt-2">
+                                <input class="form-check-input" type="checkbox" id="risco" name="risco" value="true"
+                                       th:checked="${demanda.riscoSeguranca}">
+                                <label class="form-check-label" for="risco">Há risco à segurança</label>
+                            </div>
+                            <button type="submit" class="btn btn-outline-primary w-100 mt-3">Salvar e recalcular</button>
+                        </form>
+                    </details>
+
+                    <details class="acao">
+                        <summary>Ajustar prioridade</summary>
+                        <form th:action="@{/gestao/demandas/{id}/prioridade(id=${demanda.id})}" method="post">
+                            <label for="valor" class="form-label">Nova prioridade (0 a 100)</label>
+                            <input type="number" id="valor" name="valor" class="form-control" min="0" max="100" required
+                                   th:value="${demanda.pontuacao}">
+                            <label for="justificativa" class="form-label mt-2">Motivo</label>
+                            <input id="justificativa" name="justificativa" class="form-control" required
+                                   placeholder="Fica registrado na linha do tempo">
+                            <button type="submit" class="btn btn-outline-primary w-100 mt-3">Ajustar</button>
+                        </form>
+                        <form th:if="${demanda.pontuacaoFixada}" class="mt-2"
+                              th:action="@{/gestao/demandas/{id}/prioridade/automatica(id=${demanda.id})}" method="post">
+                            <button type="submit" class="btn btn-link w-100">Voltar ao cálculo automático</button>
+                        </form>
+                    </details>
+
+                    <details class="acao acao-perigo">
+                        <summary>Cancelar demanda</summary>
+                        <form th:action="@{/gestao/demandas/{id}/cancelar(id=${demanda.id})}" method="post">
+                            <label for="motivo" class="form-label">Motivo</label>
+                            <select id="motivo" name="motivo" class="form-select" required>
+                                <option value="">Escolha</option>
+                                <option th:each="m : ${motivos}" th:value="${m}" th:text="${m.descricao}">Duplicada</option>
+                            </select>
+                            <label for="protocoloOriginal" class="form-label mt-2">Protocolo da original <span class="opcional">(se for duplicada)</span></label>
+                            <input id="protocoloOriginal" name="protocoloOriginal" class="form-control" placeholder="ARC-2026-000012">
+                            <label for="observacao" class="form-label mt-2">Observação <span class="opcional">(opcional)</span></label>
+                            <input id="observacao" name="observacao" class="form-control">
+                            <button type="submit" class="btn btn-outline-danger w-100 mt-3">Cancelar demanda</button>
+                        </form>
+                    </details>
+                </th:block>
+            </section>
+
+            <section class="cartao mb-3" th:if="${podeReabrir}" aria-labelledby="titulo-reabrir">
+                <h2 class="titulo-secao mb-2" id="titulo-reabrir">O problema voltou?</h2>
+                <form th:action="@{/demandas/{id}/reabrir(id=${demanda.id})}" method="post">
+                    <label for="motivo-reabrir" class="visually-hidden">O que ainda está errado</label>
+                    <textarea id="motivo-reabrir" name="motivo" class="form-control" rows="2" required
+                              placeholder="Conte o que ainda está errado"></textarea>
+                    <button type="submit" class="btn btn-outline-primary w-100 mt-2">Reabrir demanda</button>
+                </form>
+            </section>
+
+            <div class="cartao mb-3 text-center" id="cartao-apoio">
+                <div class="numero-destaque" th:text="${demanda.totalApoios}">8</div>
+                <div class="rotulo-numero" th:text="${demanda.totalApoios == 1} ? 'pessoa diz que ainda é um problema' : 'pessoas dizem que ainda é um problema'">
+                    pessoas dizem que ainda é um problema</div>
+                <p class="small text-body-secondary mt-1 mb-0" th:if="${demanda.ultimoApoioEm}">
+                    Último apoio <span th:text="${@formato.desde(demanda.ultimoApoioEm)}">ontem</span></p>
+                <div class="mt-3 d-flex justify-content-center" th:if="${!ehAutor and demanda.status.emAberto}">
+                    <form th:replace="~{fragmentos :: botaoApoio(${demanda}, ${jaApoiei}, '/demandas/' + ${demanda.protocolo})}"></form>
+                </div>
+                <p class="small mt-3 mb-0" th:if="${ehAutor and demanda.status.emAberto and demanda.canal.name() == 'APP'}">
+                    Esta demanda é sua. Passe o protocolo para vizinhos apoiarem.</p>
+            </div>
+
+            <div class="cartao mb-3">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span class="fw-semibold">Prioridade</span>
+                    <span th:class="|etiqueta ${demanda.classePrioridade}|" th:text="${demanda.faixaPrioridade}">Alta</span>
+                </div>
+                <div class="numero-destaque mt-2" th:text="${demanda.pontuacao}">72</div>
+                <details class="mt-2">
+                    <summary>Por que esta prioridade?</summary>
+                    <ul class="lista-parcelas">
+                        <li th:each="p : ${parcelas}"><span th:text="${p.fator()}">Urgência alta</span>
+                            <strong th:text="|+${p.pontos()}|">+35</strong></li>
+                    </ul>
+                    <p class="small text-body-secondary mb-0" th:if="${demanda.pontuacaoFixada}">
+                        Valor ajustado por um gestor; o motivo está na linha do tempo.</p>
+                    <p class="small text-body-secondary mb-0">A conta só sugere a ordem: quem decide é a equipe da Prefeitura.</p>
+                </details>
+            </div>
+
+            <div class="cartao">
+                <span class="fw-semibold">Atendimento</span>
+                <dl class="dados-demanda mt-2 mb-0">
+                    <div><dt>Setor</dt><dd th:text="${demanda.setor?.nome ?: 'Em triagem'}">Iluminação pública</dd></div>
+                    <div><dt>Responsável</dt><dd th:text="${demanda.responsavel?.nome ?: 'A definir'}">A definir</dd></div>
+                    <div><dt>Prazo</dt><dd th:text="${demanda.prazo != null} ? ${#temporals.format(demanda.prazo, 'dd/MM/yyyy')} : 'A definir'">A definir</dd></div>
+                    <div th:if="${demanda.concluidaEm}"><dt>Concluída em</dt>
+                        <dd th:text="${#temporals.format(demanda.concluidaEm, 'dd/MM/yyyy')}"></dd></div>
+                </dl>
+            </div>
+        </aside>
+    </div>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<th:block th:if="${demanda.temLocalNoMapa()}">
+    <th:block th:replace="~{fragmentos :: leaflet}"></th:block>
+    <script>
+        // Mapa só para mostrar o local: sem arrastar, para não atrapalhar a rolagem no celular.
+        const caixaMapa = document.getElementById('mapa-detalhe');
+        const ponto = [Number(caixaMapa.dataset.lat), Number(caixaMapa.dataset.lng)];
+        const mapa = L.map(caixaMapa, { dragging: false, scrollWheelZoom: false, zoomControl: false }).setView(ponto, 16);
+        L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            maxZoom: 19, attribution: '&copy; colaboradores do OpenStreetMap'
+        }).addTo(mapa);
+        L.marker(ponto).addTo(mapa);
+    </script>
+</th:block>
+</body>
+</html>

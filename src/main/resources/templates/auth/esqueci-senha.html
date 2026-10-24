@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Esqueci minha senha')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<div class="tela-acesso">
+    <aside th:replace="~{fragmentos :: painelMarca}"></aside>
+
+    <main class="area-formulario" id="conteudo">
+        <div th:replace="~{fragmentos :: topoAcesso}"></div>
+        <div class="conteudo">
+            <h1 class="titulo-pagina">Esqueci minha senha</h1>
+
+            <th:block th:if="${enviado}">
+                <div class="alert alert-success" role="status">
+                    <i class="bi bi-envelope-check" aria-hidden="true"></i>
+                    Se o e-mail estiver cadastrado, enviamos um link para criar uma nova senha. Ele vale por 30 minutos.
+                </div>
+                <div class="cartao mb-3" th:if="${linkDemo}">
+                    <p class="fw-semibold mb-2">Modo demonstração</p>
+                    <p class="mb-2">Sem servidor de e-mail, o link aparece aqui:</p>
+                    <a class="btn btn-primary w-100" th:href="@{${linkDemo}}">Abrir link de nova senha</a>
+                </div>
+                <a class="btn btn-outline-primary btn-acao w-100" th:href="@{/login}">Voltar para entrar</a>
+            </th:block>
+
+            <th:block th:unless="${enviado}">
+                <p class="subtitulo">Digite o e-mail da sua conta. Vamos enviar um link para você criar uma nova senha.</p>
+                <div class="alert alert-danger" role="alert" th:if="${erro}" th:text="${erro}"></div>
+                <form th:action="@{/senha/esqueci}" method="post">
+                    <div class="mb-4">
+                        <label for="email" class="form-label">E-mail</label>
+                        <input type="email" id="email" name="email" class="form-control" autocomplete="email" required autofocus>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-acao w-100">Enviar link</button>
+                </form>
+                <p class="text-center mt-4"><a th:href="@{/login}">Voltar para entrar</a></p>
+            </th:block>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

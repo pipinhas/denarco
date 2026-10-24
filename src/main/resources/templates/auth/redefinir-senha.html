@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Nova senha')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<div class="tela-acesso">
+    <aside th:replace="~{fragmentos :: painelMarca}"></aside>
+
+    <main class="area-formulario" id="conteudo">
+        <div th:replace="~{fragmentos :: topoAcesso}"></div>
+        <div class="conteudo">
+            <h1 class="titulo-pagina">Criar nova senha</h1>
+
+            <th:block th:if="${linkInvalido}">
+                <div class="alert alert-warning" role="alert">
+                    Este link expirou ou já foi usado. Peça um novo para continuar.</div>
+                <a class="btn btn-primary btn-acao w-100" th:href="@{/senha/esqueci}">Pedir novo link</a>
+            </th:block>
+
+            <form th:unless="${linkInvalido}" th:action="@{/senha/redefinir}" th:object="${form}" method="post" novalidate>
+                <input type="hidden" th:field="*{token}">
+                <div class="mb-3">
+                    <label for="senha" class="form-label">Nova senha</label>
+                    <div class="input-group has-validation">
+                        <input type="password" th:field="*{senha}" class="form-control" th:errorclass="is-invalid"
+                               autocomplete="new-password" aria-describedby="senha-erro" required minlength="8" autofocus>
+                        <button type="button" class="btn btn-outline-secondary" data-mostrar-senha="senha"
+                                aria-label="Mostrar senha"><i class="bi bi-eye"></i></button>
+                        <div id="senha-erro" class="invalid-feedback" th:errors="*{senha}"></div>
+                    </div>
+                    <div class="form-text">Pelo menos 8 caracteres.</div>
+                </div>
+                <div class="mb-4">
+                    <label for="confirmacao" class="form-label">Repita a nova senha</label>
+                    <input type="password" th:field="*{confirmacao}" class="form-control" th:errorclass="is-invalid"
+                           autocomplete="new-password" aria-describedby="confirmacao-erro" required>
+                    <div id="confirmacao-erro" class="invalid-feedback" th:errors="*{confirmacao}"></div>
+                </div>
+                <button type="submit" class="btn btn-primary btn-acao w-100">Salvar nova senha</button>
+            </form>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

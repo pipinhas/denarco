@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<!-- Pedaços de tela reaproveitados por todas as páginas (cabeçalho, scripts, acessibilidade...). -->
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+
+<head th:fragment="head(titulo)">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${titulo} + ' · Denarco'">Denarco</title>
+    <!-- Token CSRF para as chamadas feitas por JavaScript (o Spring Security exige em todo POST). -->
+    <meta name="csrf-token" th:content="${_csrf?.token}">
+    <meta name="csrf-header" th:content="${_csrf?.headerName}">
+    <link rel="icon" type="image/svg+xml" th:href="@{/img/icone.svg}">
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap/bootstrap.min.css}">
+    <link rel="stylesheet" th:href="@{/vendor/bootstrap-icons/bootstrap-icons.min.css}">
+    <link rel="stylesheet" th:href="@{/css/app.css}">
+</head>
+
+<body>
+
+<div th:fragment="acessibilidade" class="acessibilidade" role="group" aria-label="Acessibilidade">
+    <button type="button" class="btn btn-outline-secondary" data-acao="diminuir" aria-label="Diminuir letra">A−</button>
+    <button type="button" class="btn btn-outline-secondary" data-acao="aumentar" aria-label="Aumentar letra">A+</button>
+    <button type="button" class="btn btn-outline-secondary" data-acao="contraste" aria-pressed="false"
+            aria-label="Alto contraste" title="Alto contraste"><i class="bi bi-circle-half"></i></button>
+</div>
+
+<!-- Cabeçalho das telas internas (depois do login). -->
+<header th:fragment="cabecalho" class="barra-topo sticky-top">
+    <nav class="navbar navbar-expand-xl py-2" aria-label="Menu principal">
+      <div class="container">
+        <a class="navbar-brand marca fs-3" th:href="@{/}">Denarco</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#menu"
+                aria-controls="menu" aria-expanded="false" aria-label="Abrir menu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="menu">
+            <ul class="navbar-nav me-auto gap-1 my-2 my-xl-0">
+                <th:block th:unless="${usuarioLogado.servidorOuAcima}">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/}" th:classappend="${menuAtivo == 'inicio'} ? 'active'">
+                            <i class="bi bi-house" aria-hidden="true"></i> Início</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link js-nav-mapa" th:href="@{/mapa}" th:classappend="${menuAtivo == 'mapa'} ? 'active'">
+                            <i class="bi bi-map" aria-hidden="true"></i> Mapa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/demandas/minhas}" th:classappend="${menuAtivo == 'minhas'} ? 'active'">
+                            <i class="bi bi-card-checklist" aria-hidden="true"></i> Minhas demandas</a>
+                    </li>
+                </th:block>
+                <th:block th:if="${usuarioLogado.servidorOuAcima}">
+                    <li class="nav-item">
+                        <a class="nav-link js-nav-painel" th:href="@{/painel}" th:classappend="${menuAtivo == 'painel'} ? 'active'">
+                            <i class="bi bi-bar-chart" aria-hidden="true"></i> Painel</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link js-nav-fila" th:href="@{/atendimento}" th:classappend="${menuAtivo == 'fila'} ? 'active'">
+                            <i class="bi bi-inboxes" aria-hidden="true"></i> Fila</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link js-nav-mapa" th:href="@{/mapa}" th:classappend="${menuAtivo == 'mapa'} ? 'active'">
+                            <i class="bi bi-map" aria-hidden="true"></i> Mapa</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link js-nav-registrar" th:href="@{/atendimento/registrar}" th:classappend="${menuAtivo == 'registrar'} ? 'active'">
+                            <i class="bi bi-telephone-plus" aria-hidden="true"></i> Registrar</a>
+                    </li>
+                    <li class="nav-item" th:if="${usuarioLogado.gestorOuAcima}">
+                        <a class="nav-link js-nav-equipe" th:href="@{/gestao/equipe}" th:classappend="${menuAtivo == 'equipe'} ? 'active'">
+                            <i class="bi bi-people" aria-hidden="true"></i> Equipe</a>
+                    </li>
+                    <li class="nav-item" th:if="${usuarioLogado.admin}">
+                        <a class="nav-link js-nav-config" th:href="@{/admin/configuracoes}" th:classappend="${menuAtivo == 'configuracoes'} ? 'active'">
+                            <i class="bi bi-gear" aria-hidden="true"></i> Configurações</a>
+                    </li>
+                </th:block>
+            </ul>
+            <div class="d-flex align-items-center gap-2 flex-wrap">
+                <a class="btn btn-primary d-none d-xl-inline-flex align-items-center gap-1 js-nova-demanda"
+                   th:unless="${usuarioLogado.servidorOuAcima}"
+                   th:href="@{/demandas/nova}"><i class="bi bi-plus-lg" aria-hidden="true"></i> Nova demanda</a>
+                <div th:replace="~{fragmentos :: acessibilidade}"></div>
+                <div class="dropdown">
+                    <button class="btn btn-outline-secondary dropdown-toggle" type="button" data-bs-toggle="dropdown"
+                            aria-expanded="false" id="menu-usuario">
+                        <i class="bi bi-person-circle" aria-hidden="true"></i>
+                        <span th:text="${usuarioLogado.primeiroNome}">Maria</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><span class="dropdown-item-text small text-body-secondary"
+                                  th:text="${usuarioLogado.perfil.descricao}">Cidadão</span></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li th:if="${usuarioLogado.servidorOuAcima}"><a class="dropdown-item" th:href="@{/demandas/minhas}">
+                            <i class="bi bi-card-checklist" aria-hidden="true"></i> Minhas demandas</a></li>
+                        <li><a class="dropdown-item" th:href="@{/(tutorial=1)}">
+                            <i class="bi bi-signpost" aria-hidden="true"></i> Rever tutorial</a></li>
+                        <li>
+                            <form th:action="@{/logout}" method="post">
+                                <button class="dropdown-item" type="submit">
+                                    <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Sair</button>
+                            </form>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+      </div>
+    </nav>
+</header>
+
+<!-- Barra fixa no rodapé, só no celular: as ações principais ficam ao alcance do polegar. -->
+<nav th:fragment="barraInferior" class="barra-inferior d-xl-none" aria-label="Atalhos">
+    <th:block th:unless="${usuarioLogado.servidorOuAcima}">
+        <a th:href="@{/}" th:classappend="${menuAtivo == 'inicio'} ? 'ativo'">
+            <i class="bi bi-house" aria-hidden="true"></i><span>Início</span></a>
+        <a th:href="@{/mapa}" class="js-nav-mapa" th:classappend="${menuAtivo == 'mapa'} ? 'ativo'">
+            <i class="bi bi-map" aria-hidden="true"></i><span>Mapa</span></a>
+        <a th:href="@{/demandas/nova}" class="botao-central js-nova-demanda">
+            <i class="bi bi-plus-lg" aria-hidden="true"></i><span>Nova demanda</span></a>
+        <a th:href="@{/demandas/minhas}" th:classappend="${menuAtivo == 'minhas'} ? 'ativo'">
+            <i class="bi bi-card-checklist" aria-hidden="true"></i><span>Minhas</span></a>
+    </th:block>
+    <th:block th:if="${usuarioLogado.servidorOuAcima}">
+        <a th:href="@{/painel}" class="js-nav-painel" th:classappend="${menuAtivo == 'painel'} ? 'ativo'">
+            <i class="bi bi-bar-chart" aria-hidden="true"></i><span>Painel</span></a>
+        <a th:href="@{/atendimento}" class="js-nav-fila" th:classappend="${menuAtivo == 'fila'} ? 'ativo'">
+            <i class="bi bi-inboxes" aria-hidden="true"></i><span>Fila</span></a>
+        <a th:href="@{/atendimento/registrar}" class="botao-central js-nav-registrar">
+            <i class="bi bi-telephone-plus" aria-hidden="true"></i><span>Registrar</span></a>
+        <a th:href="@{/mapa}" class="js-nav-mapa" th:classappend="${menuAtivo == 'mapa'} ? 'ativo'">
+            <i class="bi bi-map" aria-hidden="true"></i><span>Mapa</span></a>
+    </th:block>
+</nav>
+
+<!-- Uma demanda na fila e na consulta: prioridade em destaque, depois o que é, onde e em que pé está. -->
+<a th:fragment="itemFila(d)" class="item-fila" th:href="@{/demandas/{p}(p=${d.protocolo})}">
+    <span th:class="|pontuacao-fila ${d.classePrioridade}|" th:title="|Prioridade ${d.faixaPrioridade.toLowerCase()}|">
+        <strong th:text="${d.pontuacao}">72</strong><small th:text="${d.faixaPrioridade}">Alta</small></span>
+    <span class="item-fila-texto">
+        <span class="d-block">
+            <i th:class="|bi ${d.categoria.icone}|" aria-hidden="true"></i>
+            <strong th:text="${d.categoria.nome}">Poste apagado</strong>
+            <span class="small text-body-secondary" th:text="|· ${d.localResumido}|">· Centro</span>
+        </span>
+        <span class="d-block small text-body-secondary text-truncate" th:text="${d.descricao}">Descrição</span>
+        <span class="d-flex flex-wrap gap-2 mt-1 align-items-center small">
+            <span th:class="|etiqueta ${d.status.classeCss}|" th:text="${d.status.descricao}">Aberta</span>
+            <span class="etiqueta status-atrasada" th:if="${d.atrasada}">Atrasada</span>
+            <span class="etiqueta status-atrasada" th:if="${d.riscoSeguranca and d.status.emAberto}">
+                <i class="bi bi-exclamation-triangle-fill" aria-hidden="true"></i> Risco</span>
+            <span th:if="${d.canal.name() != 'APP'}"><i class="bi bi-telephone" aria-hidden="true"></i>
+                <span th:text="${d.canal.descricao}">Telefone</span></span>
+            <span><i class="bi bi-person" aria-hidden="true"></i>
+                <span th:text="${d.responsavel?.nome ?: 'Sem responsável'}">Sem responsável</span></span>
+            <span th:if="${d.prazo}"><i class="bi bi-calendar-event" aria-hidden="true"></i>
+                <span th:text="${#temporals.format(d.prazo, 'dd/MM')}">30/10</span></span>
+            <span th:if="${d.setor == null}" class="etiqueta status-cancelada">Sem setor</span>
+            <span><i class="bi bi-people" aria-hidden="true"></i> <span th:text="${d.totalApoios}">3</span></span>
+        </span>
+    </span>
+    <i class="bi bi-chevron-right text-body-secondary" aria-hidden="true"></i>
+</a>
+
+<!-- Mensagens de retorno depois de uma ação (ex.: apoio registrado). -->
+<th:block th:fragment="mensagens">
+    <div class="alert alert-success" role="status" th:if="${mensagem}" th:text="${mensagem}"></div>
+    <div class="alert alert-danger" role="alert" th:if="${erro}" th:text="${erro}"></div>
+</th:block>
+
+<!-- Card de uma demanda nas listas. "extra" é um texto opcional, como a distância. -->
+<article th:fragment="cartaoDemanda(d, extra, apoiado, voltar)" class="cartao-demanda">
+    <a class="cartao-demanda-link" th:href="@{/demandas/{p}(p=${d.protocolo})}">
+        <span class="icone-categoria" aria-hidden="true"><i th:class="|bi ${d.categoria.icone}|"></i></span>
+        <span class="cartao-demanda-texto">
+            <span class="d-block fw-semibold" th:text="${d.categoria.nome}">Poste apagado</span>
+            <span class="d-block small text-body-secondary text-truncate">
+                <span th:text="${d.localResumido}">Centro</span><span th:if="${extra}" th:text="| · ${extra}|"></span>
+            </span>
+            <span class="d-flex flex-wrap gap-2 mt-1 align-items-center">
+                <span th:class="|etiqueta ${d.status.classeCss}|" th:text="${d.status.descricao}">Aberta</span>
+                <span class="etiqueta status-atrasada" th:if="${d.atrasada}">Atrasada</span>
+                <span class="small text-body-secondary"><i class="bi bi-people" aria-hidden="true"></i>
+                    <span th:text="${d.totalApoios == 1 ? '1 apoio' : d.totalApoios + ' apoios'}">3 apoios</span></span>
+            </span>
+        </span>
+    </a>
+    <th:block th:if="${apoiado != null}">
+        <form th:replace="~{fragmentos :: botaoApoio(${d}, ${apoiado}, ${voltar})}"></form>
+    </th:block>
+</article>
+
+<form th:fragment="botaoApoio(d, apoiado, voltar)" th:action="@{/demandas/{id}/apoio(id=${d.id})}" method="post"
+      class="m-0 form-apoio">
+    <input type="hidden" name="voltar" th:value="${voltar}">
+    <button type="submit" class="btn btn-apoio" th:classappend="${apoiado} ? 'apoiado'"
+            th:attr="aria-pressed=${apoiado}" th:title="${apoiado} ? 'Clique para retirar seu apoio' : 'Isso também me afeta'">
+        <i th:class="${apoiado} ? 'bi bi-hand-thumbs-up-fill' : 'bi bi-hand-thumbs-up'" aria-hidden="true"></i>
+        <span th:text="${apoiado} ? 'Você apoia' : 'Ainda presente'">Ainda presente</span>
+    </button>
+</form>
+
+<!-- Lado colorido das telas de login e cadastro (só aparece em telas grandes). -->
+<aside th:fragment="painelMarca" class="painel-marca">
+    <div class="marca-grande">Denarco</div>
+    <p class="chamada">Problema na sua rua? Avise e acompanhe.</p>
+    <ul>
+        <li><i class="bi bi-hand-index-thumb" aria-hidden="true"></i> Registre em poucos cliques</li>
+        <li><i class="bi bi-geo-alt" aria-hidden="true"></i> Mostre no mapa onde é</li>
+        <li><i class="bi bi-clock-history" aria-hidden="true"></i> Acompanhe cada etapa</li>
+        <li><i class="bi bi-people" aria-hidden="true"></i> Apoie o que incomoda o seu bairro</li>
+    </ul>
+    <p class="mt-5 small opacity-75">Proposta para o Desafios PE · Arcoverde</p>
+</aside>
+
+<div th:fragment="topoAcesso" class="topo-acesso">
+    <a class="marca" th:href="@{/login}">Denarco</a>
+    <div th:replace="~{fragmentos :: acessibilidade}"></div>
+</div>
+
+<!-- Campos comuns aos dois cadastros. Usa o th:object do formulário onde for incluído. -->
+<th:block th:fragment="camposPessoais">
+    <div class="mb-3">
+        <label for="nome" class="form-label">Nome completo</label>
+        <input type="text" th:field="*{nome}" class="form-control" th:errorclass="is-invalid"
+               autocomplete="name" aria-describedby="nome-erro" required>
+        <div id="nome-erro" class="invalid-feedback" th:errors="*{nome}"></div>
+    </div>
+    <div class="mb-3">
+        <label for="email" class="form-label">E-mail</label>
+        <input type="email" th:field="*{email}" class="form-control" th:errorclass="is-invalid"
+               autocomplete="email" aria-describedby="email-erro" required>
+        <div id="email-erro" class="invalid-feedback" th:errors="*{email}"></div>
+    </div>
+    <div class="mb-3">
+        <label for="telefone" class="form-label">Telefone com DDD</label>
+        <input type="tel" th:field="*{telefone}" class="form-control" th:errorclass="is-invalid"
+               autocomplete="tel" inputmode="tel" placeholder="(87) 99999-9999" aria-describedby="telefone-erro" required>
+        <div id="telefone-erro" class="invalid-feedback" th:errors="*{telefone}"></div>
+    </div>
+    <div class="mb-3">
+        <label for="senha" class="form-label">Senha</label>
+        <div class="input-group has-validation">
+            <input type="password" th:field="*{senha}" class="form-control" th:errorclass="is-invalid"
+                   autocomplete="new-password" aria-describedby="senha-ajuda senha-erro" required minlength="8">
+            <button type="button" class="btn btn-outline-secondary" data-mostrar-senha="senha" aria-label="Mostrar senha">
+                <i class="bi bi-eye"></i></button>
+            <div id="senha-erro" class="invalid-feedback" th:errors="*{senha}"></div>
+        </div>
+        <div id="senha-ajuda" class="form-text">Pelo menos 8 caracteres.</div>
+    </div>
+    <div class="form-check mb-4">
+        <input class="form-check-input" type="checkbox" th:field="*{aceitouPrivacidade}" th:errorclass="is-invalid">
+        <label class="form-check-label" th:for="${#ids.prev('aceitouPrivacidade')}">
+            Li e aceito o <a th:href="@{/privacidade}" target="_blank">aviso de privacidade</a>
+        </label>
+        <div class="invalid-feedback" th:errors="*{aceitouPrivacidade}"></div>
+    </div>
+</th:block>
+
+<th:block th:fragment="errosGerais">
+    <div class="alert alert-danger" role="alert" th:if="${#fields.hasGlobalErrors()}">
+        <p class="mb-0" th:each="erro : ${#fields.globalErrors()}" th:text="${erro}"></p>
+    </div>
+</th:block>
+
+<!-- Uma pessoa na tela "Equipe", com o formulário de mudança de perfil quando for permitido. -->
+<div th:fragment="pessoaEquipe(u)" class="d-flex flex-wrap justify-content-between align-items-center gap-2">
+    <div>
+        <p class="fw-semibold mb-0"><span th:text="${u.nome}">João</span>
+            <span class="etiqueta status-encaminhada ms-1" th:text="${u.perfil.descricao}">Servidor</span></p>
+        <p class="small text-body-secondary mb-0">
+            <span th:text="${u.email}">joao@x.com</span><span th:if="${u.setor}" th:text="| · ${u.setor.nome}|"></span></p>
+    </div>
+    <form th:if="${gerenciaveis.contains(u.id)}" th:action="@{/gestao/equipe/{id}/perfil(id=${u.id})}" method="post"
+          class="d-flex flex-wrap gap-2 align-items-center">
+        <input type="hidden" name="busca" th:value="${busca}">
+        <label class="visually-hidden" th:for="|novo-perfil-${u.id}|">Novo perfil</label>
+        <select class="form-select form-select-sm w-auto" th:id="|novo-perfil-${u.id}|" name="perfil">
+            <option th:each="perfil : ${perfis}" th:value="${perfil}" th:text="${perfil.descricao}"
+                    th:selected="${perfil == u.perfil}">Servidor</option>
+        </select>
+        <th:block th:if="${escolheSetor}">
+            <label class="visually-hidden" th:for="|novo-setor-${u.id}|">Setor</label>
+            <select class="form-select form-select-sm w-auto" th:id="|novo-setor-${u.id}|" name="setorId">
+                <option value="">Sem setor</option>
+                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}"
+                        th:selected="${u.setor != null and u.setor.id == s.id}">Drenagem</option>
+            </select>
+        </th:block>
+        <button type="submit" class="btn btn-sm btn-outline-primary">Salvar</button>
+    </form>
+    <span class="small text-body-secondary" th:unless="${gerenciaveis.contains(u.id)}">Sem permissão para alterar</span>
+</div>
+
+<th:block th:fragment="scripts">
+    <script th:src="@{/vendor/bootstrap/bootstrap.bundle.min.js}"></script>
+    <script th:src="@{/js/app.js}"></script>
+    <!-- VLibras: widget gratuito do governo federal que traduz o conteúdo para Libras. Precisa de internet. -->
+    <div vw class="enabled">
+        <div vw-access-button class="active"></div>
+        <div vw-plugin-wrapper><div class="vw-plugin-top-wrapper"></div></div>
+    </div>
+    <script src="https://vlibras.gov.br/app/vlibras-plugin.js" defer></script>
+    <script>
+        window.addEventListener('load', function () {
+            if (window.VLibras) new window.VLibras.Widget('https://vlibras.gov.br/app');
+        });
+    </script>
+</th:block>
+
+<!-- Tutorial guiado (Driver.js): só carrega quando é para mostrar. -->
+<th:block th:fragment="tutorial(mostrar)">
+    <th:block th:if="${mostrar}">
+        <link rel="stylesheet" th:href="@{/vendor/driverjs/driver.css}">
+        <script th:src="@{/vendor/driverjs/driver.js.iife.js}"></script>
+        <script th:src="@{/js/tutorial.js}"></script>
+    </th:block>
+</th:block>
+
+<th:block th:fragment="leaflet">
+    <link rel="stylesheet" th:href="@{/vendor/leaflet/leaflet.css}">
+    <script th:src="@{/vendor/leaflet/leaflet.js}"></script>
+</th:block>
+
+</body>
+</html>

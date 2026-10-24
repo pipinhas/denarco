@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Conta corporativa')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<div class="tela-acesso">
+    <aside th:replace="~{fragmentos :: painelMarca}"></aside>
+
+    <main class="area-formulario" id="conteudo">
+        <div th:replace="~{fragmentos :: topoAcesso}"></div>
+        <div class="conteudo">
+            <h1 class="titulo-pagina">Conta corporativa</h1>
+            <p class="subtitulo">Para servidores da Prefeitura. Um gestor do seu setor aprova o acesso.</p>
+
+            <form th:action="@{/cadastro/corporativo}" th:object="${form}" method="post" novalidate>
+                <th:block th:replace="~{fragmentos :: errosGerais}"></th:block>
+
+                <fieldset class="mb-3">
+                    <legend class="form-label fs-6">Onde você atua?</legend>
+                    <div class="form-check mb-2" th:each="opcao : ${atuacoes}">
+                        <input class="form-check-input" type="radio" th:field="*{atuacao}" th:value="${opcao}"
+                               th:errorclass="is-invalid">
+                        <label class="form-check-label" th:for="${#ids.prev('atuacao')}"
+                               th:text="${opcao.descricao}">Atendimento e triagem</label>
+                    </div>
+                    <div class="invalid-feedback d-block" th:errors="*{atuacao}"></div>
+                </fieldset>
+
+                <div class="mb-4">
+                    <label for="setorId" class="form-label">Setor</label>
+                    <select th:field="*{setorId}" class="form-select" aria-describedby="setor-ajuda">
+                        <option value="">Escolha o setor</option>
+                        <option th:each="setor : ${setores}" th:value="${setor.id}" th:text="${setor.nome}">Drenagem</option>
+                    </select>
+                    <div id="setor-ajuda" class="form-text">Planejamento e controle pode deixar em branco: acompanha todos os setores.</div>
+                </div>
+
+                <th:block th:replace="~{fragmentos :: camposPessoais}"></th:block>
+                <button type="submit" class="btn btn-primary btn-acao w-100">Pedir acesso</button>
+            </form>
+
+            <p class="text-center mt-4">Já tem conta? <a th:href="@{/login}">Entrar</a></p>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

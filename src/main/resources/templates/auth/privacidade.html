@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Aviso de privacidade')}"></head>
+<body>
+<main class="container py-5" id="conteudo" style="max-width: 720px">
+    <a class="marca fs-3" th:href="@{/login}">Denarco</a>
+    <h1 class="titulo-pagina mt-4">Aviso de privacidade</h1>
+    <p class="subtitulo">Como usamos os seus dados, em linguagem simples (LGPD, Lei 13.709/2018).</p>
+
+    <div class="cartao mb-3">
+        <h2 class="h5">O que guardamos</h2>
+        <p class="mb-0">Nome, e-mail, telefone e as demandas que você registra (descrição, local e foto).</p>
+    </div>
+    <div class="cartao mb-3">
+        <h2 class="h5">Para que usamos</h2>
+        <p class="mb-0">Para a Prefeitura atender e acompanhar as demandas e, se preciso, falar com você sobre elas.</p>
+    </div>
+    <div class="cartao mb-3">
+        <h2 class="h5">Quem vê</h2>
+        <p class="mb-0">Outros cidadãos veem a demanda, mas nunca o seu nome, contato ou foto.
+            Seus dados de contato só aparecem para a equipe que cuida da demanda.</p>
+    </div>
+    <div class="cartao mb-4">
+        <h2 class="h5">Sua senha</h2>
+        <p class="mb-0">Fica guardada de forma que nem a Prefeitura consegue lê-la.</p>
+    </div>
+    <a class="btn btn-outline-primary" th:href="@{/login}">Voltar</a>
+</main>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

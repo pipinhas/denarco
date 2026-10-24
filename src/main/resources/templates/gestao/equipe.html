@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Equipe')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <th:block th:replace="~{fragmentos :: mensagens}"></th:block>
+    <h1 class="titulo-pagina">Equipe</h1>
+    <p class="subtitulo" th:text="${ator.setor != null and ator.perfil.name() != 'ADMIN'} ? |Setor ${ator.setor.nome}| : 'Todos os setores'">
+        Setor Iluminação pública</p>
+
+    <div class="row g-4">
+        <div class="col-lg-7">
+            <section class="cartao mb-4" id="pedidos" aria-labelledby="titulo-pedidos">
+                <h2 class="titulo-secao mb-3" id="titulo-pedidos">Pedidos de acesso
+                    <span class="etiqueta status-encaminhada" th:text="${#lists.size(pendentes)}">1</span></h2>
+
+                <p class="text-body-secondary mb-0" th:if="${#lists.isEmpty(pendentes)}">Nenhum pedido esperando resposta.</p>
+
+                <div class="pedido" th:each="p : ${pendentes}">
+                    <p class="fw-semibold mb-0" th:text="${p.nome}">Pedro Pendente</p>
+                    <p class="small text-body-secondary mb-2">
+                        <span th:text="${p.email}">pedro@x.com</span> · <span th:text="${p.telefone}"></span><br>
+                        Pediu: <strong th:text="${p.atuacao?.descricao}">Equipe de campo</strong>
+                        <span th:text="${p.setor != null} ? |· ${p.setor.nome}| : '· todos os setores'">· Drenagem</span>
+                        · <span th:text="${@formato.desde(p.criadoEm)}">hoje</span>
+                    </p>
+                    <div class="d-flex flex-wrap gap-2 align-items-end">
+                        <form th:action="@{/gestao/equipe/{id}/aprovar(id=${p.id})}" method="post" class="d-flex flex-wrap gap-2 align-items-end flex-grow-1">
+                            <div>
+                                <label class="form-label small mb-1" th:for="|perfil-${p.id}|">Perfil</label>
+                                <select class="form-select" th:id="|perfil-${p.id}|" name="perfil">
+                                    <option th:each="perfil : ${perfisConvite}" th:value="${perfil}" th:text="${perfil.descricao}"
+                                            th:selected="${p.atuacao != null and perfil == p.atuacao.perfilSugerido}">Servidor</option>
+                                </select>
+                            </div>
+                            <div th:if="${escolheSetor}">
+                                <label class="form-label small mb-1" th:for="|setor-${p.id}|">Setor</label>
+                                <select class="form-select" th:id="|setor-${p.id}|" name="setorId">
+                                    <option value="">Todos (só gestor)</option>
+                                    <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}"
+                                            th:selected="${p.setor != null and p.setor.id == s.id}">Drenagem</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg" aria-hidden="true"></i> Aprovar</button>
+                        </form>
+                        <form th:action="@{/gestao/equipe/{id}/recusar(id=${p.id})}" method="post">
+                            <button type="submit" class="btn btn-outline-danger">Recusar</button>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <section class="cartao mb-4" id="pessoas" aria-labelledby="titulo-pessoas">
+                <h2 class="titulo-secao mb-3" id="titulo-pessoas">Pessoas</h2>
+
+                <form th:action="@{/gestao/equipe}" method="get" class="d-flex gap-2 mb-2" role="search">
+                    <label for="busca-email" class="visually-hidden">E-mail da pessoa</label>
+                    <input type="email" id="busca-email" name="email" class="form-control" th:value="${busca}"
+                           placeholder="Buscar pessoa pelo e-mail para promover">
+                    <button type="submit" class="btn btn-outline-primary"><i class="bi bi-search" aria-hidden="true"></i>
+                        <span class="visually-hidden">Buscar</span></button>
+                </form>
+                <p class="small text-body-secondary">A busca é pelo e-mail exato, para não expor a lista de cidadãos.</p>
+
+                <th:block th:if="${buscou}">
+                    <p class="text-body-secondary" th:if="${encontrado == null}">Ninguém com esse e-mail. Que tal enviar um convite?</p>
+                    <div class="linha-pessoa destaque" th:if="${encontrado != null}">
+                        <div th:replace="~{fragmentos :: pessoaEquipe(${encontrado})}"></div>
+                    </div>
+                </th:block>
+
+                <div class="linha-pessoa" th:each="u : ${equipe}">
+                    <div th:replace="~{fragmentos :: pessoaEquipe(${u})}"></div>
+                </div>
+            </section>
+        </div>
+
+        <div class="col-lg-5">
+            <section class="cartao mb-4" id="convidar" aria-labelledby="titulo-convidar">
+                <h2 class="titulo-secao mb-1" id="titulo-convidar">Convidar</h2>
+                <p class="small text-body-secondary">Quando a pessoa criar a conta corporativa com este e-mail, o acesso já estará liberado.</p>
+                <form th:action="@{/gestao/convites}" method="post">
+                    <label for="convite-email" class="form-label">E-mail</label>
+                    <input type="email" id="convite-email" name="email" class="form-control" required>
+                    <div class="row g-2 mt-1">
+                        <div class="col">
+                            <label for="convite-perfil" class="form-label">Perfil</label>
+                            <select id="convite-perfil" name="perfil" class="form-select">
+                                <option th:each="perfil : ${perfisConvite}" th:value="${perfil}" th:text="${perfil.descricao}">Servidor</option>
+                            </select>
+                        </div>
+                        <div class="col" th:if="${escolheSetor}">
+                            <label for="convite-setor" class="form-label">Setor</label>
+                            <select id="convite-setor" name="setorId" class="form-select">
+                                <option value="">Todos (só gestor)</option>
+                                <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}">Drenagem</option>
+                            </select>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-primary w-100 mt-3"><i class="bi bi-envelope-plus" aria-hidden="true"></i> Criar convite</button>
+                </form>
+
+                <th:block th:unless="${#lists.isEmpty(convites)}">
+                    <h3 class="h6 mt-4">Convites esperando cadastro</h3>
+                    <ul class="lista-simples">
+                        <li th:each="c : ${convites}">
+                            <span><strong th:text="${c.email}">ana@x.com</strong><br>
+                                <span class="small text-body-secondary"
+                                      th:text="|${c.perfil.descricao}${c.setor != null ? ' · ' + c.setor.nome : ''}|">Servidor · Drenagem</span></span>
+                            <form th:action="@{/gestao/convites/{id}/cancelar(id=${c.id})}" method="post">
+                                <button type="submit" class="btn btn-sm btn-outline-secondary">Cancelar</button>
+                            </form>
+                        </li>
+                    </ul>
+                </th:block>
+            </section>
+
+            <section class="cartao" id="alteracoes" aria-labelledby="titulo-alteracoes">
+                <h2 class="titulo-secao mb-3" id="titulo-alteracoes">Últimas mudanças de acesso</h2>
+                <p class="text-body-secondary mb-0" th:if="${#lists.isEmpty(alteracoes)}">Nenhuma mudança ainda.</p>
+                <ul class="lista-simples">
+                    <li th:each="a : ${alteracoes}">
+                        <span>
+                            <strong th:text="${a.alteradoPor.nome}">Ana</strong>
+                            <span th:if="${a.perfilAnterior == a.perfilNovo}">recusou o pedido de</span>
+                            <span th:unless="${a.perfilAnterior == a.perfilNovo}">mudou</span>
+                            <strong th:text="${a.usuario.nome}">Pedro</strong>
+                            <span th:unless="${a.perfilAnterior == a.perfilNovo}"
+                                  th:text="|de ${a.perfilAnterior.descricao} para ${a.perfilNovo.descricao}|">de Cidadão para Servidor</span>
+                            <br><span class="small text-body-secondary" th:text="${#temporals.format(a.criadoEm, 'dd/MM/yyyy HH:mm')}"></span>
+                        </span>
+                    </li>
+                </ul>
+            </section>
+        </div>
+    </div>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

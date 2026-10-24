@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Criar conta')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<div class="tela-acesso">
+    <aside th:replace="~{fragmentos :: painelMarca}"></aside>
+
+    <main class="area-formulario" id="conteudo">
+        <div th:replace="~{fragmentos :: topoAcesso}"></div>
+        <div class="conteudo">
+            <h1 class="titulo-pagina">Criar conta</h1>
+            <p class="subtitulo">Leva menos de um minuto.</p>
+
+            <form th:action="@{/cadastro}" th:object="${form}" method="post" novalidate>
+                <th:block th:replace="~{fragmentos :: errosGerais}"></th:block>
+                <th:block th:replace="~{fragmentos :: camposPessoais}"></th:block>
+                <button type="submit" class="btn btn-primary btn-acao w-100">Criar conta</button>
+            </form>
+
+            <p class="text-center mt-4">Já tem conta? <a th:href="@{/login}">Entrar</a></p>
+        </div>
+    </main>
+</div>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+</body>
+</html>

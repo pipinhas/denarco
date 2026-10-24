@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Painel')}"></head>
+<body th:attr="data-perfil=${usuarioLogado.perfil.name()},data-mostrar-tutorial=${mostrarTutorial}">
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <th:block th:replace="~{fragmentos :: mensagens}"></th:block>
+
+    <div class="d-flex justify-content-between align-items-end flex-wrap gap-3 mb-3">
+        <div>
+            <h1 class="titulo-pagina">Painel</h1>
+            <p class="subtitulo mb-0" th:text="${tituloEscopo}">Todos os setores</p>
+        </div>
+        <!-- Período e setor: um filtro só, numa linha acima dos números e gráficos. -->
+        <form th:action="@{/painel}" method="get" class="d-flex flex-wrap gap-2 align-items-center" id="filtros-painel">
+            <div class="btn-group" role="group" aria-label="Período">
+                <th:block th:each="p : ${periodos}">
+                    <input type="radio" class="btn-check" name="dias" th:id="|dias-${p}|" th:value="${p}"
+                           th:checked="${p == dias}" onchange="this.form.submit()">
+                    <label class="btn btn-outline-secondary" th:for="|dias-${p}|" th:text="|${p} dias|">30 dias</label>
+                </th:block>
+            </div>
+            <th:block th:if="${enxergaTodos}">
+                <label for="painel-setor" class="visually-hidden">Setor</label>
+                <select id="painel-setor" name="setorId" class="form-select w-auto" onchange="this.form.submit()">
+                    <option value="">Todos os setores</option>
+                    <option th:each="s : ${setores}" th:value="${s.id}" th:text="${s.nome}"
+                            th:selected="${setorId == s.id}">Drenagem</option>
+                </select>
+            </th:block>
+            <noscript><button type="submit" class="btn btn-primary">Aplicar</button></noscript>
+        </form>
+    </div>
+
+    <form th:action="@{/consulta}" method="get" class="consulta-rapida mb-4" id="consulta-rapida" role="search">
+        <label for="pergunta" class="form-label fw-semibold"><i class="bi bi-chat-dots" aria-hidden="true"></i>
+            Pergunte ao Denarco</label>
+        <div class="d-flex gap-2">
+            <input id="pergunta" name="q" class="form-control" placeholder="Ex.: iluminação atrasada no Centro">
+            <button type="submit" class="btn btn-primary">Consultar</button>
+        </div>
+    </form>
+
+    <section id="kpis" class="row g-2 g-md-3" aria-label="Números do período">
+        <div class="col-6 col-lg-3">
+            <a class="cartao cartao-numero cartao-link" th:href="@{/atendimento(setorId=${setorId})}">
+                <div class="numero-destaque" th:text="${resumo.emAberto()}">13</div>
+                <div class="rotulo-numero">em aberto agora</div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <a class="cartao cartao-numero cartao-link" th:href="@{/atendimento(aba='ATRASADAS',setorId=${setorId})}">
+                <div class="numero-destaque text-danger" th:text="${resumo.atrasadas()}">2</div>
+                <div class="rotulo-numero"><i class="bi bi-exclamation-circle" aria-hidden="true"></i> atrasadas</div>
+            </a>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="cartao cartao-numero">
+                <div class="numero-destaque text-success" th:text="${resumo.concluidasNoPeriodo()}">2</div>
+                <div class="rotulo-numero" th:text="|concluídas em ${dias} dias|">concluídas em 30 dias</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-3">
+            <div class="cartao cartao-numero">
+                <div class="numero-destaque numero-texto" th:text="${resumo.tempoMedio()}">3,0 dias</div>
+                <div class="rotulo-numero">tempo médio até concluir</div>
+            </div>
+        </div>
+    </section>
+    <p class="fonte-dados" th:text="${fonte}">Fonte: base do Denarco</p>
+
+    <div class="row g-4">
+        <section class="col-lg-7" aria-labelledby="titulo-categorias">
+            <div class="cartao h-100" id="cartao-categorias">
+                <h2 class="titulo-secao" id="titulo-categorias">Em aberto por tipo de problema</h2>
+                <p class="small text-body-secondary">Quantas demandas de cada tipo esperam solução agora.</p>
+                <div class="area-grafico" id="area-categorias"><canvas id="grafico-categorias" role="img"
+                        aria-label="Gráfico de barras: demandas em aberto por tipo de problema"></canvas></div>
+                <details class="mt-2"><summary>Ver em tabela</summary><div id="tabela-categorias"></div></details>
+            </div>
+        </section>
+
+        <section class="col-lg-5" aria-labelledby="titulo-bairros">
+            <div class="cartao h-100" id="ranking-bairros">
+                <h2 class="titulo-secao" id="titulo-bairros">Bairros com mais demandas em aberto</h2>
+                <p class="small text-body-secondary">Onde a atenção está mais concentrada.</p>
+                <ol class="ranking" id="lista-bairros"></ol>
+                <a th:href="@{/mapa}" class="small"><i class="bi bi-map" aria-hidden="true"></i> Ver no mapa</a>
+            </div>
+        </section>
+
+        <section class="col-12" aria-labelledby="titulo-semanas">
+            <div class="cartao" id="cartao-semanas">
+                <h2 class="titulo-secao" id="titulo-semanas">Registradas e concluídas por semana</h2>
+                <p class="small text-body-secondary">Se a linha de concluídas fica abaixo da de registradas, a fila está crescendo.</p>
+                <div class="area-grafico area-grafico-linha"><canvas id="grafico-semanas" role="img"
+                        aria-label="Gráfico de linhas: demandas registradas e concluídas por semana"></canvas></div>
+                <details class="mt-2"><summary>Ver em tabela</summary><div id="tabela-semanas"></div></details>
+            </div>
+        </section>
+    </div>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<script th:src="@{/vendor/chartjs/chart.umd.js}"></script>
+<script th:src="@{/js/painel.js}" th:attr="data-api=@{/api/painel(dias=${dias},setorId=${setorId})}" id="script-painel"></script>
+<th:block th:replace="~{fragmentos :: tutorial(${mostrarTutorial})}"></th:block>
+</body>
+</html>

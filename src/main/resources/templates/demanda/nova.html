@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head(${modoAtendente} ? 'Registrar atendimento' : 'Nova demanda')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4 conteudo-estreito">
+    <th:block th:unless="${modoAtendente}">
+        <h1 class="titulo-pagina">Relatar um problema</h1>
+        <p class="subtitulo">Três passos rápidos. A Prefeitura recebe na hora.</p>
+    </th:block>
+    <th:block th:if="${modoAtendente}">
+        <h1 class="titulo-pagina">Registrar atendimento</h1>
+        <p class="subtitulo">Demanda que chegou por telefone, no balcão ou por WhatsApp. Ela entra na mesma fila das demais.</p>
+    </th:block>
+
+    <!-- Um formulário só: cada passo aparece quando o anterior é respondido (nova-demanda.js). -->
+    <form id="form-demanda" th:action="${modoAtendente} ? @{/atendimento/registrar} : @{/demandas}" th:object="${form}"
+          method="post" enctype="multipart/form-data" novalidate th:attr="data-atendente=${modoAtendente == true}">
+        <th:block th:replace="~{fragmentos :: errosGerais}"></th:block>
+
+        <section class="passo" th:if="${modoAtendente}" aria-labelledby="titulo-contato">
+            <h2 class="titulo-passo" id="titulo-contato"><i class="bi bi-telephone" aria-hidden="true"></i> Quem entrou em contato?</h2>
+            <fieldset class="mb-3">
+                <legend class="form-label fs-6">Canal</legend>
+                <div class="btn-group w-100 grupo-quebra" role="group">
+                    <th:block th:each="c : ${canais}">
+                        <input type="radio" class="btn-check" th:field="*{canal}" th:value="${c}">
+                        <label class="btn btn-outline-secondary" th:for="${#ids.prev('canal')}" th:text="${c.descricao}">Telefone</label>
+                    </th:block>
+                </div>
+            </fieldset>
+            <div class="row g-2">
+                <div class="col-md-7">
+                    <label for="solicitanteNome" class="form-label">Nome <span class="opcional">(opcional)</span></label>
+                    <input type="text" th:field="*{solicitanteNome}" class="form-control" th:errorclass="is-invalid">
+                    <div class="invalid-feedback" th:errors="*{solicitanteNome}"></div>
+                </div>
+                <div class="col-md-5">
+                    <label for="solicitanteTelefone" class="form-label">Telefone para retorno <span class="opcional">(opcional)</span></label>
+                    <input type="tel" th:field="*{solicitanteTelefone}" class="form-control" inputmode="tel" th:errorclass="is-invalid">
+                    <div class="invalid-feedback" th:errors="*{solicitanteTelefone}"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="passo" aria-labelledby="titulo-passo-1">
+            <h2 class="titulo-passo" id="titulo-passo-1"><span class="numero-passo">1</span> O que está acontecendo?</h2>
+            <div class="grade-categorias" role="radiogroup" aria-labelledby="titulo-passo-1">
+                <th:block th:each="c : ${categorias}">
+                    <input type="radio" class="btn-check" th:field="*{categoriaId}" th:value="${c.id}">
+                    <label class="cartao-categoria" th:for="${#ids.prev('categoriaId')}">
+                        <i th:class="|bi ${c.icone}|" aria-hidden="true"></i>
+                        <span th:text="${c.nome}">Poste apagado</span>
+                    </label>
+                </th:block>
+            </div>
+            <div class="text-danger small mt-2" th:errors="*{categoriaId}"></div>
+        </section>
+
+        <section class="passo" id="passo-local" th:hidden="${form.categoriaId == null}" aria-labelledby="titulo-passo-2">
+            <h2 class="titulo-passo" id="titulo-passo-2"><span class="numero-passo">2</span> Onde?</h2>
+            <th:block th:unless="${modoAtendente}">
+                <button type="button" class="btn btn-primary btn-acao w-100" id="btn-localizacao">
+                    <i class="bi bi-crosshair" aria-hidden="true"></i> Usar minha localização</button>
+                <p class="small text-body-secondary text-center my-2">ou toque no mapa para marcar o local</p>
+            </th:block>
+            <p class="small text-body-secondary mb-2" th:if="${modoAtendente}">
+                Marque no mapa o local que a pessoa descreveu, ou escreva o endereço e a referência.</p>
+            <div id="mapa" class="mapa" aria-label="Mapa para marcar o local do problema"></div>
+            <p class="small mt-2 mb-0" id="aviso-mapa" role="status" aria-live="polite"></p>
+            <input type="hidden" th:field="*{latitude}">
+            <input type="hidden" th:field="*{longitude}">
+
+            <div id="aviso-duplicada" class="mt-3" hidden aria-live="polite"></div>
+
+            <div class="row g-2 mt-2">
+                <div class="col-md-8">
+                    <label for="endereco" class="form-label">Endereço</label>
+                    <input type="text" th:field="*{endereco}" class="form-control" th:errorclass="is-invalid"
+                           placeholder="Preenchido pelo mapa">
+                    <div class="invalid-feedback" th:errors="*{endereco}"></div>
+                </div>
+                <div class="col-md-4">
+                    <label for="bairro" class="form-label">Bairro</label>
+                    <input type="text" th:field="*{bairro}" class="form-control" th:errorclass="is-invalid">
+                    <div class="invalid-feedback" th:errors="*{bairro}"></div>
+                </div>
+                <div class="col-12">
+                    <label for="pontoReferencia" class="form-label">Ponto de referência <span class="opcional">(opcional)</span></label>
+                    <input type="text" th:field="*{pontoReferencia}" class="form-control" th:errorclass="is-invalid"
+                           placeholder="Ex.: em frente à escola">
+                    <div class="invalid-feedback" th:errors="*{pontoReferencia}"></div>
+                </div>
+            </div>
+        </section>
+
+        <section class="passo" id="passo-descricao" th:hidden="${form.categoriaId == null}" aria-labelledby="titulo-passo-3">
+            <h2 class="titulo-passo" id="titulo-passo-3"><span class="numero-passo">3</span> Conte o que você vê</h2>
+            <label for="descricao" class="visually-hidden">Descrição do problema</label>
+            <textarea th:field="*{descricao}" class="form-control" rows="3" maxlength="1000" th:errorclass="is-invalid"
+                      placeholder="Ex.: O poste da esquina está apagado há uma semana."></textarea>
+            <div class="invalid-feedback" th:errors="*{descricao}"></div>
+
+            <div class="mt-3">
+                <input type="file" id="foto" name="foto" accept="image/*" class="visually-hidden campo-foto">
+                <label class="btn btn-outline-primary" for="foto">
+                    <i class="bi bi-camera" aria-hidden="true"></i> Adicionar foto <span class="opcional">(opcional)</span></label>
+                <div id="previa-foto" class="previa-foto mt-2" hidden>
+                    <img alt="Prévia da foto escolhida">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="remover-foto">Remover foto</button>
+                </div>
+            </div>
+
+            <details class="mais-detalhes mt-3" th:open="${form.riscoSeguranca}">
+                <summary>Mais detalhes <span class="opcional">(opcional)</span></summary>
+                <fieldset class="mt-3">
+                    <legend class="form-label fs-6">Urgência</legend>
+                    <div class="btn-group w-100" role="group">
+                        <th:block th:each="u : ${urgencias}">
+                            <input type="radio" class="btn-check" th:field="*{urgencia}" th:value="${u}">
+                            <label class="btn btn-outline-secondary" th:for="${#ids.prev('urgencia')}" th:text="${u.descricao}">Média</label>
+                        </th:block>
+                    </div>
+                </fieldset>
+                <fieldset class="mt-3">
+                    <legend class="form-label fs-6">Quem é afetado?</legend>
+                    <div class="btn-group w-100 grupo-quebra" role="group">
+                        <th:block th:each="a : ${alcances}">
+                            <input type="radio" class="btn-check" th:field="*{alcance}" th:value="${a}">
+                            <label class="btn btn-outline-secondary" th:for="${#ids.prev('alcance')}" th:text="${a.descricao}">Uma rua</label>
+                        </th:block>
+                    </div>
+                </fieldset>
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" th:field="*{riscoSeguranca}">
+                    <label class="form-check-label" th:for="${#ids.prev('riscoSeguranca')}">Há risco à segurança das pessoas</label>
+                </div>
+            </details>
+
+            <div class="alert alert-danger mt-3" id="aviso-risco" th:hidden="${!form.riscoSeguranca}" role="alert">
+                <strong>Em perigo imediato, ligue 193 (Bombeiros) ou 199 (Defesa Civil).</strong>
+                Sua demanda vai para o topo da fila da Prefeitura.
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-acao w-100 mt-4">
+                <i class="bi bi-send" aria-hidden="true"></i>
+                <span th:text="${modoAtendente} ? 'Registrar demanda' : 'Enviar demanda'">Enviar demanda</span></button>
+        </section>
+    </form>
+
+    <!-- Formulário separado para "Apoiar esta" no aviso de duplicada (formulários não podem ficar um dentro do outro). -->
+    <form id="form-apoio-duplicada" th:action="@{/demandas/0/apoio}" method="post" hidden>
+        <input type="hidden" name="voltar" value="/">
+    </form>
+</main>
+
+<template id="modelo-duplicada">
+    <div class="cartao aviso-duplicada">
+        <p class="fw-semibold mb-1"><i class="bi bi-info-circle" aria-hidden="true"></i> <span class="dup-titulo"></span></p>
+        <p class="mb-1 dup-descricao"></p>
+        <p class="small text-body-secondary mb-2 dup-detalhe"></p>
+        <div class="d-flex flex-wrap gap-2">
+            <button type="submit" form="form-apoio-duplicada" class="btn btn-primary dup-apoiar">
+                <i class="bi bi-hand-thumbs-up" aria-hidden="true"></i> Apoiar esta</button>
+            <a class="btn btn-outline-secondary dup-ver">Ver demanda</a>
+        </div>
+        <p class="small mt-2 mb-0">É outro problema? Continue preenchendo abaixo.</p>
+    </div>
+</template>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<th:block th:replace="~{fragmentos :: leaflet}"></th:block>
+<script th:src="@{/js/nova-demanda.js}"></script>
+</body>
+</html>

@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Denarco — Guia do projeto</title>
+<style>
+  @page { size: A4; margin: 20mm 18mm 20mm 18mm; }
+  :root {
+    --laranja: #c2410c; --laranja-escuro: #9a3412; --laranja-claro: #fff1e8;
+    --texto: #1f2328; --suave: #5b6168; --borda: #e4dfd8; --fundo-codigo: #f6f4f1;
+    --azul: #1e40af; --azul-claro: #e0ecff; --verde: #166534; --verde-claro: #dcfce7;
+  }
+  * { box-sizing: border-box; }
+  html { font-size: 10.5pt; }
+  body { font-family: "Segoe UI", system-ui, -apple-system, sans-serif; color: var(--texto); line-height: 1.55; margin: 0; }
+  h1, h2, h3, h4 { line-height: 1.25; color: var(--texto); }
+  h1 { font-size: 22pt; margin: 0 0 4mm; break-before: page; padding-top: 2mm; }
+  h1 .num { color: var(--laranja); margin-right: 3mm; }
+  h2 { font-size: 14pt; margin: 7mm 0 2.5mm; color: var(--laranja-escuro); break-after: avoid; }
+  h3 { font-size: 11.5pt; margin: 5mm 0 1.5mm; break-after: avoid; }
+  h4 { font-size: 10.5pt; margin: 3.5mm 0 1mm; break-after: avoid; }
+  p { margin: 0 0 2.5mm; }
+  ul, ol { margin: 0 0 3mm; padding-left: 6mm; }
+  li { margin-bottom: 1mm; }
+  a { color: var(--laranja-escuro); }
+  code { font-family: Consolas, "Cascadia Mono", monospace; font-size: 9pt; background: var(--fundo-codigo); padding: 0 1.2mm; border-radius: 1mm; }
+  pre { font-family: Consolas, "Cascadia Mono", monospace; font-size: 8.4pt; line-height: 1.45; background: var(--fundo-codigo);
+        border: 1px solid var(--borda); border-left: 3px solid var(--laranja); border-radius: 2mm; padding: 3mm 4mm; margin: 2mm 0 4mm;
+        white-space: pre-wrap; break-inside: avoid; }
+  pre code { background: none; padding: 0; font-size: inherit; }
+  .com { color: #6b7280; }
+  .kw { color: #9a3412; font-weight: 600; }
+  .str { color: #166534; }
+  .ann { color: #1e40af; }
+  table { width: 100%; border-collapse: collapse; margin: 2mm 0 4mm; font-size: 9.4pt; break-inside: auto; }
+  th, td { border: 1px solid var(--borda); padding: 1.6mm 2.2mm; text-align: left; vertical-align: top; }
+  th { background: #faf7f3; font-weight: 600; }
+  tr { break-inside: avoid; }
+  td code { font-size: 8.4pt; }
+  .caixa { border: 1px solid var(--borda); border-radius: 3mm; padding: 3mm 4mm; margin: 3mm 0 4mm; break-inside: avoid; }
+  .caixa.resumo { background: var(--laranja-claro); border-color: #f5c9b0; }
+  .caixa.codigo-nosso { background: var(--azul-claro); border-color: #bcd2fb; }
+  .caixa.atencao { background: #fffbeb; border-color: #f4d58d; }
+  .caixa .titulo { font-weight: 700; margin-bottom: 1mm; display: block; }
+  .caixa p:last-child, .caixa ul:last-child { margin-bottom: 0; }
+  figure { margin: 3mm 0 5mm; break-inside: avoid; text-align: center; }
+  figure img { max-width: 100%; border: 1px solid var(--borda); border-radius: 2mm; }
+  figcaption { font-size: 8.8pt; color: var(--suave); margin-top: 1.5mm; }
+  .lado-a-lado { display: flex; gap: 4mm; justify-content: center; align-items: flex-start; break-inside: avoid; margin: 3mm 0 5mm; }
+  .lado-a-lado figure { margin: 0; flex: 1; }
+  .lado-a-lado img { max-height: 120mm; width: auto; }
+  .etiqueta { display: inline-block; padding: 0.3mm 2mm; border-radius: 10mm; font-size: 8.6pt; font-weight: 700; background: var(--azul-claro); color: var(--azul); }
+  .sprint-cabecalho { display: flex; align-items: center; gap: 3mm; margin: 6mm 0 2mm; break-after: avoid; }
+  .sprint-cabecalho .bola { width: 10mm; height: 10mm; border-radius: 50%; background: var(--laranja); color: #fff; display: grid; place-items: center; font-weight: 800; font-size: 13pt; flex-shrink: 0; }
+  .sprint-cabecalho h2 { margin: 0; }
+  .colunas { display: grid; grid-template-columns: 1fr 1fr; gap: 4mm; }
+  .diagrama { margin: 3mm 0 5mm; text-align: center; break-inside: avoid; }
+  .diagrama svg { max-width: 100%; height: auto; }
+  .pequeno { font-size: 9pt; color: var(--suave); }
+
+  /* Capa */
+  .capa { height: 255mm; display: flex; flex-direction: column; justify-content: space-between; }
+  .capa .faixa { height: 6mm; background: linear-gradient(90deg, #c2410c, #f0b43c); border-radius: 2mm; }
+  .capa .marca { font-size: 15pt; font-weight: 800; color: var(--laranja); letter-spacing: -0.02em; margin-top: 30mm; }
+  .capa h1.titulo-capa { font-size: 34pt; break-before: auto; margin: 4mm 0 4mm; line-height: 1.1; }
+  .capa .sub { font-size: 14pt; color: var(--suave); max-width: 150mm; }
+  .capa .dados { font-size: 10pt; color: var(--suave); border-top: 1px solid var(--borda); padding-top: 4mm; }
+  .capa .destaques { display: grid; grid-template-columns: repeat(4, 1fr); gap: 3mm; margin-top: 14mm; }
+  .capa .destaques div { border: 1px solid var(--borda); border-radius: 3mm; padding: 3mm; }
+  .capa .destaques strong { display: block; font-size: 18pt; color: var(--laranja); }
+
+  /* Sumário */
+  .sumario { columns: 2; column-gap: 10mm; font-size: 10pt; }
+  .sumario div { break-inside: avoid; margin-bottom: 1.5mm; }
+  .sumario .n { color: var(--laranja); font-weight: 700; display: inline-block; width: 8mm; }
+</style>
+</head>
+<body>
+
+<!-- ===================== CAPA ===================== -->
+<section class="capa">
+  <div>
+    <div class="faixa"></div>
+    <div class="marca">Denarco</div>
+    <h1 class="titulo-capa">Guia do projeto</h1>
+    <p class="sub">Como o sistema de demandas de serviços públicos de Arcoverde foi construído, sprint a sprint,
+      e o que cada parte do código faz — explicado em linguagem simples.</p>
+    <div class="destaques">
+      <div><strong>4</strong>sprints</div>
+      <div><strong>4</strong>perfis de acesso</div>
+      <div><strong>11</strong>migrations do banco</div>
+      <div><strong>49</strong>testes automáticos</div>
+    </div>
+  </div>
+  <div class="dados">
+    Proposta para o desafio <strong>"Como podemos integrar e priorizar as demandas de serviços públicos de Arcoverde
+    para melhorar o atendimento à população?"</strong> — Desafios PE · Secretaria de Planejamento e Projetos<br>
+    Versão MVP · 24 de outubro de 2026 · Java 21 · Spring Boot 4.1 · Thymeleaf · PostgreSQL / H2
+  </div>
+</section>
+
+<!-- ===================== SUMÁRIO ===================== -->
+<h1>Sumário</h1>
+<div class="sumario">
+  <div><span class="n">1</span>O que é o Denarco</div>
+  <div><span class="n">2</span>Como o trabalho foi organizado: as 4 sprints</div>
+  <div><span class="n">3</span>Conceitos básicos antes do código</div>
+  <div><span class="n">4</span>Como o código está organizado</div>
+  <div><span class="n">5</span>O banco de dados e as migrations</div>
+  <div><span class="n">6</span>Model: entidades e enums</div>
+  <div><span class="n">7</span>Repository: falando com o banco</div>
+  <div><span class="n">8</span>Service: as regras de negócio</div>
+  <div><span class="n">9</span>Controller: as rotas do site</div>
+  <div><span class="n">10</span>Security: login, senhas e permissões</div>
+  <div><span class="n">11</span>DTOs, exceções e configurações</div>
+  <div><span class="n">12</span>As telas: Thymeleaf, CSS e JavaScript</div>
+  <div><span class="n">13</span>Testes automáticos</div>
+  <div><span class="n">14</span>Qualidade: ISO/IEC 25010, acessibilidade e LGPD</div>
+  <div><span class="n">15</span>Como rodar e apresentar</div>
+  <div><span class="n">16</span>Glossário</div>
+</div>
+
+<div class="caixa resumo" style="margin-top:8mm">
+  <span class="titulo">Como ler este guia</span>
+  <p>Os capítulos 1 e 2 contam <strong>o que</strong> o sistema faz e <strong>como</strong> ele foi construído. O capítulo 3
+    explica, do zero, os conceitos que aparecem no resto (MVC, banco de dados, migration, hash...). Do 4 ao 13, cada
+    capítulo pega uma parte do código e explica classe por classe. Sempre que um conceito aparece, ele vem primeiro em
+    uma introdução simples e depois em uma caixa azul <em>"No nosso código"</em>, mostrando onde ele está no Denarco.</p>
+  <p>Os nomes de classes, métodos e arquivos aparecem <code>assim</code>. Todos existem de verdade no projeto.</p>
+</div>
+
+<!-- ===================== 1. O QUE É ===================== -->
+<h1><span class="num">1</span>O que é o Denarco</h1>
+
+<h2>1.1 O problema</h2>
+<p>Buraco na rua, poste apagado, lixo acumulado, bueiro entupido. Em toda cidade esses problemas chegam à Prefeitura por
+  vários caminhos: telefone, balcão, WhatsApp, ouvidoria. O caderno de contexto do desafio aponta o que acontece quando
+  essas informações ficam espalhadas:</p>
+<ul>
+  <li>a mesma reclamação é registrada várias vezes (<strong>duplicidade</strong>);</li>
+  <li>o que já foi feito se perde (<strong>perda de histórico</strong>);</li>
+  <li>ninguém sabe direito quem está cuidando, qual o prazo e o que está atrasado;</li>
+  <li>a gestão não tem números confiáveis para decidir onde agir primeiro.</li>
+</ul>
+
+<h2>1.2 A solução em uma frase</h2>
+<div class="caixa resumo">
+  <p style="font-size:11.5pt"><strong>O Denarco é um site onde a população e os atendentes registram problemas da cidade num lugar só,
+    com mapa, foto e protocolo; a Prefeitura encaminha cada um ao setor certo, define responsável e prazo, registra o que foi
+    feito, e todos acompanham pela linha do tempo. Uma fórmula simples e visível sugere a prioridade.</strong></p>
+</div>
+<p>Na prática, o site faz seis coisas:</p>
+<ol>
+  <li><strong>Registrar</strong> uma demanda em até 5 cliques, com local no mapa, foto e descrição.</li>
+  <li><strong>Evitar duplicadas</strong>: se já existe o mesmo problema a até 100 metros, o sistema avisa e a pessoa pode só "apoiar" a demanda existente.</li>
+  <li><strong>Priorizar</strong>: cada demanda ganha uma pontuação de 0 a 100 (urgência, quantas pessoas afeta, apoios e tempo em aberto), com a conta à mostra.</li>
+  <li><strong>Encaminhar e acompanhar</strong>: setor, responsável, prazo, providências e conclusão; tudo fica na linha do tempo, que nunca é apagada.</li>
+  <li><strong>Integrar canais</strong>: o atendente registra pedidos que chegaram por telefone, balcão ou WhatsApp, e eles entram na mesma fila.</li>
+  <li><strong>Enxergar o todo</strong>: painel com números e gráficos, mapa com as concentrações por bairro e uma consulta em linguagem simples ("buracos abertos este mês").</li>
+</ol>
+
+<h2>1.3 Quem usa: os quatro perfis</h2>
+<table>
+  <tr><th style="width:18%">Perfil</th><th style="width:30%">Quem é</th><th>O que pode fazer</th></tr>
+  <tr><td><strong>Cidadão</strong></td><td>Morador, associação</td><td>Registra demandas, acompanha as suas, apoia as de outras pessoas, vê o mapa, reabre uma demanda até 7 dias depois de concluída.</td></tr>
+  <tr><td><strong>Servidor</strong></td><td>Atendimento, triagem, equipes de campo</td><td>Vê a fila do seu setor, registra pedidos recebidos por telefone, inicia o atendimento, registra providências com foto e conclui.</td></tr>
+  <tr><td><strong>Gestor</strong></td><td>Gestor de secretaria, planejamento e controle</td><td>Tudo do servidor, mais: define responsável e prazo, transfere de setor, corrige a classificação, ajusta a prioridade (com motivo), cancela, vê o painel, aprova contas e convida/promove servidores.</td></tr>
+  <tr><td><strong>Administrador</strong></td><td>Secretaria de Planejamento (responsável pelo sistema)</td><td>Tudo, em todos os setores, mais: cadastra setores e tipos de problema e pode nomear gestores e outros administradores.</td></tr>
+</table>
+<p>A regra de quem promove quem é simples: <strong>você só mexe em quem está abaixo de você e só dá perfis abaixo do seu</strong>
+  (o administrador também pode nomear outro administrador). Um gestor só cuida das pessoas do próprio setor.</p>
+
+<h2>1.4 Uma demanda do começo ao fim</h2>
+<p>A melhor forma de entender o sistema é seguir uma demanda:</p>
+<ol>
+  <li><strong>Maria (cidadã)</strong> vê um poste apagado. Ela toca em <em>Nova demanda</em>, escolhe "Poste apagado", toca em <em>Usar minha localização</em>, escreve uma frase e envia. Recebe um protocolo, por exemplo <code>ARC-2026-000016</code>. A demanda já vai sozinha para o setor de Iluminação pública, porque o tipo de problema define o setor.</li>
+  <li><strong>Vizinhos</strong> que veem o mesmo problema tocam em <em>Ainda presente</em>. Cada apoio soma pontos na prioridade.</li>
+  <li><strong>Ana (gestora de Iluminação)</strong> abre a fila, que vem ordenada pela prioridade, entra na demanda e define <em>João</em> como responsável, com prazo de 7 dias (sugerido pelo tipo de problema).</li>
+  <li><strong>João (servidor)</strong> inicia o atendimento, registra uma providência com foto ("reator queimado") e depois conclui ("reator trocado").</li>
+  <li><strong>Maria</strong> recebe um aviso e vê toda a linha do tempo. Se o poste apagar de novo, ela pode reabrir em até 7 dias.</li>
+</ol>
+
+<div class="diagrama">
+<svg viewBox="0 0 760 210" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif" font-size="13">
+  <defs><marker id="seta" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5b6168"/></marker></defs>
+  <g font-weight="700" text-anchor="middle">
+    <rect x="10" y="70" width="120" height="44" rx="22" fill="#e0ecff" stroke="#1e40af"/><text x="70" y="97" fill="#1e40af">Aberta</text>
+    <rect x="200" y="70" width="140" height="44" rx="22" fill="#ede9fe" stroke="#5b21b6"/><text x="270" y="97" fill="#5b21b6">Encaminhada</text>
+    <rect x="410" y="70" width="140" height="44" rx="22" fill="#fef3c7" stroke="#92400e"/><text x="480" y="97" fill="#92400e">Em andamento</text>
+    <rect x="620" y="70" width="130" height="44" rx="22" fill="#dcfce7" stroke="#166534"/><text x="685" y="97" fill="#166534">Concluída</text>
+    <rect x="200" y="160" width="140" height="40" rx="20" fill="#e5e7eb" stroke="#374151"/><text x="270" y="185" fill="#374151">Cancelada</text>
+  </g>
+  <g stroke="#5b6168" stroke-width="1.6" fill="none" marker-end="url(#seta)">
+    <line x1="130" y1="92" x2="196" y2="92"/>
+    <line x1="340" y1="92" x2="406" y2="92"/>
+    <line x1="550" y1="92" x2="616" y2="92"/>
+    <path d="M340,80 C470,30 560,30 640,68"/>
+    <path d="M70,114 C70,170 130,180 196,180"/>
+    <line x1="270" y1="114" x2="270" y2="156"/>
+    <path d="M685,70 C685,10 70,10 70,66" stroke-dasharray="5 4"/>
+  </g>
+  <g fill="#5b6168" font-size="11.5" text-anchor="middle">
+    <text x="163" y="85">responsável</text><text x="163" y="128">e prazo</text>
+    <text x="373" y="85">iniciar</text>
+    <text x="583" y="85">concluir</text>
+    <text x="490" y="40">concluída numa visita só</text>
+    <text x="110" y="196">duplicada ou</text><text x="110" y="208">improcedente</text>
+    <text x="380" y="18">reaberta em até 7 dias (o problema voltou)</text>
+  </g>
+</svg>
+<div class="pequeno">Figura 1 — As situações de uma demanda e como ela passa de uma para outra. O código não deixa pular etapas (método <code>StatusDemanda.podeMudarPara</code>).</div>
+</div>
+
+<div class="lado-a-lado">
+  <figure><img src="img/inicio-cidadao.png" alt=""><figcaption>Início do cidadão (celular)</figcaption></figure>
+  <figure><img src="img/nova-demanda.png" alt="" style="max-height:120mm"><figcaption>Nova demanda: categoria, mapa e descrição</figcaption></figure>
+  <figure><img src="img/tutorial-cidadao.png" alt=""><figcaption>Tutorial do primeiro acesso</figcaption></figure>
+</div>
+
+<figure><img src="img/detalhe-gestor.png" alt="" style="max-height:120mm"><figcaption>Página da demanda vista pela gestora: dados, mapa, linha do tempo, apoios, prioridade e as "Ações da equipe".</figcaption></figure>
+
+<figure><img src="img/fila.png" alt="" style="max-height:110mm"><figcaption>Fila de atendimento do servidor: números do setor, abas e as demandas em ordem de prioridade.</figcaption></figure>
+
+<figure><img src="img/painel.png" alt="" style="max-height:200mm"><figcaption>Painel da gestão: números do período (com fonte e datas), demandas por tipo, bairros e evolução semanal.</figcaption></figure>
+
+<div class="lado-a-lado">
+  <figure><img src="img/mapa.png" alt="" style="max-height:80mm"><figcaption>Mapa: o número no ponto é a prioridade; círculos escuros agrupam demandas próximas.</figcaption></figure>
+</div>
+<div class="lado-a-lado">
+  <figure><img src="img/consulta.png" alt="" style="max-height:85mm"><figcaption>"Pergunte ao Denarco": o sistema mostra o que entendeu antes do resultado.</figcaption></figure>
+  <figure><img src="img/contraste.png" alt="" style="max-height:85mm"><figcaption>Alto contraste e letra maior (acessibilidade).</figcaption></figure>
+</div>
+
+<!-- ===================== 2. SPRINTS ===================== -->
+<h1><span class="num">2</span>Como o trabalho foi organizado: as 4 sprints</h1>
+
+<div class="caixa resumo">
+  <span class="titulo">O que é uma sprint</span>
+  <p>Sprint é um bloco curto de trabalho com um objetivo claro e uma entrega que dá para ver funcionando. Em vez de construir
+    tudo e só testar no final, o sistema cresce em fatias: ao fim de cada sprint a equipe roda o site, confere se está como
+    queria e aponta ajustes antes de seguir. Isso dá controle, mostra o sistema se formando e encurta o tempo até o lançamento.</p>
+</div>
+
+<p>O plano original previa 4 sprints de 2 semanas. Como a entrega ficou para segunda-feira (26/10/2026), as mesmas 4 sprints foram
+  comprimidas em um fim de semana, cada uma com um <strong>checkpoint</strong> da equipe. O que não cabia no prazo foi listado
+  como "depois de segunda" no plano (seção 0.1 do <code>PLANO_DE_IMPLEMENTACAO.md</code>).</p>
+
+<table>
+  <tr><th>Sprint</th><th>Tema</th><th>Ao final dava para ver...</th></tr>
+  <tr><td>1</td><td>Fundação e acesso</td><td>login, cadastro de cidadão, conta corporativa e "esqueci minha senha" funcionando no celular</td></tr>
+  <tr><td>2</td><td>Demandas do cidadão</td><td>registrar em até 5 cliques, aviso de duplicada, apoio "ainda presente", tutorial do cidadão</td></tr>
+  <tr><td>3</td><td>Atendimento pela Prefeitura</td><td>o ciclo completo (triagem → responsável e prazo → providência → conclusão), convites e promoções</td></tr>
+  <tr><td>4</td><td>Painéis, mapa, consulta e qualidade</td><td>painel com gráficos, mapa territorial, consulta em linguagem simples, tutoriais de todos os perfis, auditoria</td></tr>
+</table>
+
+<div class="sprint-cabecalho"><div class="bola">1</div><h2>Sprint 1 — Fundação e acesso</h2></div>
+<p><strong>Objetivo:</strong> o projeto roda em qualquer máquina com um comando, e a pessoa consegue entrar, criar conta e recuperar a senha.</p>
+<h4>O que foi feito</h4>
+<ul>
+  <li>Projeto gerado no <em>Spring Initializr</em> (Spring Boot 4.1.2, Java 21) com o <em>Maven Wrapper</em> (<code>mvnw</code>), que baixa o Maven sozinho.</li>
+  <li>Banco <strong>H2 em arquivo</strong> para desenvolvimento (não precisa instalar nada) e perfil <code>prod</code> para PostgreSQL.</li>
+  <li>Migrations <code>V1</code> a <code>V4</code>: tabelas de setor, usuário e token de senha, mais os 5 setores iniciais do caderno.</li>
+  <li><strong>Spring Security</strong>: login por e-mail e senha, senhas com <strong>BCrypt</strong>, sessão de 30 minutos, proteção CSRF e hierarquia de perfis.</li>
+  <li>Telas de entrar, criar conta, conta corporativa (área de atuação + setor, nasce "pendente"), esqueci minha senha e criar nova senha.</li>
+  <li>Layout base com letra grande onde importa, barra de acessibilidade (A+, A−, alto contraste) e página de erro amigável.</li>
+  <li>Administrador inicial criado a partir da configuração, nunca com senha escrita no código.</li>
+</ul>
+<h4>Como verificamos</h4>
+<ul>
+  <li>9 testes automáticos (cadastro, e-mail repetido, conta pendente, token de senha expirado e reutilizado).</li>
+  <li>Teste de ponta a ponta com requisições reais: senha errada, validações em português, link de nova senha que não funciona duas vezes, servidor recebendo "acesso negado" em <code>/admin</code>.</li>
+  <li>Capturas de tela simulando celular (375 px) e computador.</li>
+</ul>
+<h4>O que deu errado e como corrigimos</h4>
+<ul>
+  <li>O <code>JAVA_HOME</code> da máquina apontava para uma pasta inexistente: passamos a usar o JDK 24 instalado (o README explica).</li>
+  <li>Cabeçalho desalinhado, link sem a cor do sistema e alto contraste incompleto: ajustes de CSS vistos nas capturas.</li>
+</ul>
+
+<div class="sprint-cabecalho"><div class="bola">2</div><h2>Sprint 2 — Demandas do cidadão</h2></div>
+<p><strong>Objetivo:</strong> o cidadão registra uma demanda em até 5 cliques, acompanha pelo protocolo e apoia demandas de outras pessoas.</p>
+<h4>O que foi feito</h4>
+<ul>
+  <li>Migrations <code>V5</code> a <code>V8</code>: categorias (tipos de problema, com setor padrão e prazo), demandas, histórico e apoios.</li>
+  <li>Formulário único que vai se revelando: categoria → local (GPS ou toque no mapa, endereço preenchido pelo OpenStreetMap) → descrição → foto opcional → enviar.</li>
+  <li>Aviso de <strong>possível duplicada</strong> (mesma categoria a até 100 m) com o botão "Apoiar esta".</li>
+  <li><strong>Protocolo</strong> (<code>ARC-ano-número</code>) e encaminhamento automático ao setor do tipo de problema.</li>
+  <li><strong>Prioridade</strong> calculada por fórmula, com "Por que esta prioridade?" mostrando a conta.</li>
+  <li>Fotos reduzidas no celular e regravadas no servidor, o que <strong>remove o GPS e o modelo do aparelho</strong> escondidos na imagem.</li>
+  <li>Tela inicial do cidadão, página da demanda com linha do tempo e o <strong>tutorial guiado</strong> no estilo do colheitadev.</li>
+  <li>Dados fictícios: 14 demandas espalhadas por Arcoverde, moradores e servidores de demonstração.</li>
+</ul>
+<h4>Como verificamos</h4>
+<ul>
+  <li>19 testes automáticos (fórmula de prioridade, apoio liga/desliga, autor não apoia a própria demanda, distância e protocolo).</li>
+  <li>Simulação no navegador: tocar no mapa preencheu o endereço real ("Rua José Tadeu, São Geraldo") e o cursor foi para a descrição.</li>
+  <li>Permissões da foto: a autora e a equipe do setor veem; outro cidadão e servidor de outro setor recebem "não encontrada".</li>
+</ul>
+<h4>O que deu errado e como corrigimos</h4>
+<ul>
+  <li>A lista "Perto de você" quebrava: o Thymeleaf proíbe chamar um <em>bean</em> dentro dos parâmetros de um fragmento. Solução: calcular antes, com <code>th:with</code>.</li>
+  <li>No celular o botão de apoio espremia o texto do card: o CSS passou a quebrar a linha.</li>
+</ul>
+
+<div class="sprint-cabecalho"><div class="bola">3</div><h2>Sprint 3 — Atendimento pela Prefeitura</h2></div>
+<p><strong>Objetivo:</strong> o ciclo completo funciona (registro → triagem → execução → conclusão) e cada perfil só faz o que pode.</p>
+<h4>O que foi feito</h4>
+<ul>
+  <li><strong>Fila de atendimento</strong> com números do setor, abas (Minhas tarefas, Sem responsável, Atrasadas, Concluídas), filtros e paginação, em ordem de prioridade.</li>
+  <li><strong>Ações da equipe</strong> na página da demanda: definir responsável e prazo, iniciar, registrar providência com foto, concluir, transferir de setor, corrigir classificação, ajustar prioridade com motivo obrigatório e cancelar (se for duplicada, quem registrou passa a apoiar a original).</li>
+  <li><strong>Registrar atendimento</strong>: pedidos que chegam por telefone, balcão ou WhatsApp entram na mesma fila, com o canal e quem ligou.</li>
+  <li><strong>Equipe</strong>: aprovar ou recusar contas corporativas, convidar por e-mail e promover respeitando a hierarquia; toda mudança fica registrada.</li>
+  <li><strong>Configurações</strong> do admin: setores e tipos de problema (nada é apagado, só desativado).</li>
+  <li>Migrations <code>V9</code> (convite) e <code>V10</code> (histórico de mudanças de perfil), reabertura pelo autor em 7 dias, aviso por e-mail na conclusão e recálculo diário das prioridades às 3h.</li>
+</ul>
+<h4>Como verificamos</h4>
+<ul>
+  <li>40 testes automáticos, incluindo <strong>testes de permissão por rota</strong> que abrem as telas de cada perfil.</li>
+  <li>Ciclo completo com 7 contas diferentes, por requisições reais: cidadã registra, gestora encaminha, servidor conclui com foto, cidadã reabre.</li>
+  <li>Bloqueios: servidor de outro setor recebe "acesso negado" mesmo digitando a URL; gestora não consegue dar perfil de admin.</li>
+</ul>
+<h4>O que deu errado e como corrigimos</h4>
+<ul>
+  <li><strong>Bug real achado por teste:</strong> a regra de equipe deixava um servidor "gerenciar" cidadãos. A rota já bloqueava, mas a regra do service foi corrigida também (defesa em camadas).</li>
+  <li>Rolagem horizontal da fila no celular: um texto longo alargava a coluna. Solução de CSS: <code>minmax(0, 1fr)</code>.</li>
+  <li>O texto do cancelamento por duplicada dizia que o apoio foi transferido mesmo quando não foi; passou a refletir o que aconteceu.</li>
+</ul>
+
+<div class="sprint-cabecalho"><div class="bola">4</div><h2>Sprint 4 — Painéis, mapa, consulta e qualidade</h2></div>
+<p><strong>Objetivo:</strong> a gestão enxerga pendências, atrasos e concentrações no território, e o sistema passa por uma auditoria de qualidade.</p>
+<h4>O que foi feito</h4>
+<ul>
+  <li><strong>Painel</strong> (tela inicial de gestor e admin): em aberto, atrasadas, concluídas no período e tempo médio até concluir; gráfico por tipo de problema; ranking de bairros; registradas × concluídas por semana. Todo número mostra fonte e período, como pede o caderno.</li>
+  <li><strong>Mapa territorial</strong> para todos os perfis, com a prioridade dentro de cada ponto e agrupamento das concentrações.</li>
+  <li><strong>Pergunte ao Denarco</strong>: consulta em linguagem simples, por regras e dicionário, sem inteligência artificial. Sempre mostra o que entendeu.</li>
+  <li>Tutoriais do servidor (na fila), do gestor e do admin (no painel); widget <strong>VLibras</strong>; perfil <strong>HTTPS</strong> para o GPS funcionar no celular; migration <code>V11</code> com índices de desempenho.</li>
+</ul>
+<h4>Como verificamos</h4>
+<ul>
+  <li>49 testes automáticos (incluindo a consulta, que entende "iluminacao ATRASADA no centro" sem acento e em maiúsculas).</li>
+  <li><strong>Auditoria de acessibilidade</strong> com o axe-core (o mesmo motor do Lighthouse) em 17 telas, no modo normal e no alto contraste.</li>
+  <li>Cores dos gráficos conferidas com um validador de daltonismo e contraste.</li>
+</ul>
+<h4>O que deu errado e como corrigimos</h4>
+<ul>
+  <li>A auditoria achou 7 tipos de problema (contraste de botões cinza, atributos de acessibilidade do tutorial, texto branco sobre amarelo no alto contraste, link do mapa sem sublinhado...). Todos corrigidos: <strong>0 violações</strong> no final.</li>
+  <li>No gráfico de linhas a legenda não mostrava as cores e a curva suavizada passava dos valores reais: legenda com círculos coloridos e curva "monotone", que não inventa picos.</li>
+</ul>
+
+<h2>2.5 O que ficou para depois do MVP</h2>
+<p>Ficou de fora, por escolha consciente e registrada no plano: Docker, integração contínua, bloqueio por tentativas de login,
+  exclusão de conta pelo próprio usuário, exportação CSV, teste de carga, teste com leitor de tela real, teste de usabilidade (SUS)
+  com moradores e servidores, backup automático, publicação em servidor com HTTPS de verdade e integração com sistemas que a
+  Prefeitura já usa (que depende do levantamento previsto no caderno).</p>
+
+<!-- ===================== 3. CONCEITOS ===================== -->
+<h1><span class="num">3</span>Conceitos básicos antes do código</h1>
+<p>Este capítulo explica, do zero, as ideias que aparecem no resto do guia. Cada uma termina com uma caixa azul mostrando onde ela está no Denarco.</p>
+
+<h2>3.1 Navegador, servidor e requisição</h2>
+<p>Quando alguém abre o Denarco, o <strong>navegador</strong> (Chrome, Edge, Safari) manda um pedido pela internet — uma
+  <strong>requisição HTTP</strong> — para um programa que está rodando em outro computador, o <strong>servidor</strong>. O servidor
+  monta a resposta (normalmente uma página HTML) e devolve. Existem dois tipos de pedido que importam aqui:</p>
+<ul>
+  <li><strong>GET</strong>: "me mostre algo" — abrir a fila, ver uma demanda. Não muda nada.</li>
+  <li><strong>POST</strong>: "faça algo" — enviar uma demanda, apoiar, concluir. Muda dados.</li>
+</ul>
+<p>Cada endereço que o servidor entende (por exemplo <code>/demandas/nova</code>) é uma <strong>rota</strong>.
+  <strong>HTTPS</strong> é o mesmo HTTP, mas com a conversa criptografada entre navegador e servidor.</p>
+<div class="caixa codigo-nosso"><span class="titulo">No nosso código</span>
+  <p>O servidor é o próprio sistema Java, que sobe na porta 8080 (ou 8443 com HTTPS). As rotas ficam nos <em>controllers</em> (capítulo 9).</p>
+</div>
+
+<h2>3.2 Java e Spring Boot</h2>
+<p><strong>Java</strong> é a linguagem em que o sistema foi escrito. <strong>Spring Boot</strong> é um conjunto de bibliotecas que já
+  resolve o trabalho repetitivo de um site: receber requisições, falar com o banco, cuidar do login, validar formulários. Em vez de
+  escrever isso do zero, a gente marca as classes com <strong>anotações</strong> (palavras com <code>@</code>, como <code>@Service</code>)
+  e o Spring sabe o que fazer com elas. Ele também cria os objetos e entrega um para o outro sozinho — isso se chama
+  <strong>injeção de dependência</strong>: um controller "pede" um service no construtor e o Spring entrega pronto.</p>
+<pre><code><span class="ann">@Service</span>
+<span class="kw">public class</span> DemandaService {
+    <span class="kw">private final</span> DemandaRepository demandaRepository;
+
+    <span class="com">// O Spring chama este construtor e entrega o repository pronto.</span>
+    <span class="kw">public</span> DemandaService(DemandaRepository demandaRepository, ...) { ... }
+}</code></pre>
+
+<h2>3.3 MVC e as camadas</h2>
+<p><strong>MVC</strong> (Model–View–Controller) é um jeito de separar o código em papéis:</p>
+<ul>
+  <li><strong>Model</strong>: os dados e o que eles significam (uma Demanda, um Usuário).</li>
+  <li><strong>View</strong>: a tela que a pessoa vê (os arquivos HTML).</li>
+  <li><strong>Controller</strong>: recebe a requisição, chama quem sabe fazer o trabalho e escolhe qual tela mostrar.</li>
+</ul>
+<p>No Denarco o MVC ganhou mais duas camadas, como a equipe pediu: <strong>Service</strong> (as regras de negócio) e
+  <strong>Repository</strong> (o acesso ao banco). Cada camada só conversa com a vizinha:</p>
+
+<div class="diagrama">
+<svg viewBox="0 0 760 190" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif" font-size="13">
+  <defs><marker id="s2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5b6168"/></marker></defs>
+  <g text-anchor="middle">
+    <rect x="5" y="40" width="120" height="60" rx="10" fill="#f6f4f1" stroke="#8a9096"/><text x="65" y="66" font-weight="700">Navegador</text><text x="65" y="84" font-size="11" fill="#5b6168">a pessoa</text>
+    <rect x="165" y="40" width="130" height="60" rx="10" fill="#fff1e8" stroke="#c2410c"/><text x="230" y="66" font-weight="700">Controller</text><text x="230" y="84" font-size="11" fill="#5b6168">recebe e responde</text>
+    <rect x="335" y="40" width="130" height="60" rx="10" fill="#fff1e8" stroke="#c2410c"/><text x="400" y="66" font-weight="700">Service</text><text x="400" y="84" font-size="11" fill="#5b6168">regras de negócio</text>
+    <rect x="505" y="40" width="130" height="60" rx="10" fill="#fff1e8" stroke="#c2410c"/><text x="570" y="66" font-weight="700">Repository</text><text x="570" y="84" font-size="11" fill="#5b6168">consultas ao banco</text>
+    <path d="M675,45 a40,10 0 0 0 80,0 v50 a40,10 0 0 1 -80,0 z" fill="#e0ecff" stroke="#1e40af"/><ellipse cx="715" cy="45" rx="40" ry="10" fill="#e0ecff" stroke="#1e40af"/><text x="715" y="80" font-weight="700">Banco</text>
+    <rect x="165" y="135" width="130" height="46" rx="10" fill="#dcfce7" stroke="#166534"/><text x="230" y="157" font-weight="700">View</text><text x="230" y="173" font-size="11" fill="#5b6168">HTML (Thymeleaf)</text>
+    <rect x="505" y="135" width="250" height="46" rx="10" fill="#f6f4f1" stroke="#8a9096"/><text x="630" y="157" font-weight="700">Migrations (Flyway)</text><text x="630" y="173" font-size="11" fill="#5b6168">criam e mudam as tabelas</text>
+  </g>
+  <g stroke="#5b6168" stroke-width="1.6" fill="none" marker-end="url(#s2)">
+    <line x1="125" y1="62" x2="161" y2="62"/><line x1="295" y1="70" x2="331" y2="70"/><line x1="465" y1="70" x2="501" y2="70"/><line x1="635" y1="70" x2="671" y2="70"/>
+    <line x1="230" y1="100" x2="230" y2="131"/><path d="M165,158 C110,158 90,120 90,104"/><line x1="715" y1="135" x2="715" y2="109" stroke-dasharray="4 3"/>
+  </g>
+  <g fill="#5b6168" font-size="11" text-anchor="middle"><text x="143" y="55">pedido</text><text x="112" y="150">página</text></g>
+</svg>
+<div class="pequeno">Figura 2 — O caminho de uma requisição. O controller nunca fala direto com o banco; quem decide as regras é sempre o service.</div>
+</div>
+
+<div class="caixa codigo-nosso"><span class="titulo">No nosso código: as 5 regras das camadas</span>
+<ol>
+  <li><strong>Controller</strong> recebe a requisição, valida o formulário (<code>@Valid</code>), chama um service e devolve a tela. Não tem regra de negócio e nunca usa repository.</li>
+  <li><strong>Service</strong> concentra as regras (quem pode o quê, mudanças de status, prioridade) e grava o histórico. Métodos que alteram dados usam <code>@Transactional</code>: ou tudo dá certo, ou nada é salvo.</li>
+  <li><strong>Repository</strong> é uma interface que o Spring Data transforma em consultas SQL.</li>
+  <li><strong>Model</strong> (as entidades) nunca é preenchido direto por formulário: usamos classes de formulário (<em>DTOs</em>). Isso impede que alguém envie "perfil=ADMIN" escondido no cadastro.</li>
+  <li><strong>Migrations</strong> são a única forma de mudar o banco. Migration que já rodou nunca é editada: cria-se outra.</li>
+</ol>
+</div>
+
+<h2>3.4 Banco de dados</h2>
+<p>O banco de dados guarda tudo de forma organizada em <strong>tabelas</strong>, parecidas com planilhas. Cada <strong>linha</strong>
+  é um registro (uma demanda) e cada <strong>coluna</strong> é uma informação (descrição, bairro, status). Dois conceitos importam:</p>
+<ul>
+  <li><strong>Chave primária (PK)</strong>: a coluna <code>id</code>, um número único que identifica cada linha.</li>
+  <li><strong>Chave estrangeira (FK)</strong>: uma coluna que aponta para a linha de outra tabela. Por exemplo, <code>demanda.setor_id</code> guarda o <code>id</code> do setor. É assim que as tabelas se ligam.</li>
+</ul>
+<p>Para conversar com o banco usa-se a linguagem <strong>SQL</strong> (<code>SELECT</code>, <code>INSERT</code>, <code>CREATE TABLE</code>...).</p>
+<div class="caixa codigo-nosso"><span class="titulo">No nosso código: dois bancos</span>
+  <p><strong>H2</strong> é um banco que roda dentro do próprio Java e guarda tudo num arquivo (<code>dados/denarco.mv.db</code>): ótimo para
+    desenvolver e apresentar, porque não precisa instalar nada. <strong>PostgreSQL</strong> é o banco de produção, robusto e gratuito.
+    O mesmo código funciona nos dois porque o H2 roda em "modo PostgreSQL" e as migrations usam SQL compatível com ambos.
+    Quem escolhe é o <em>perfil</em> de configuração: <code>dev</code> (H2) ou <code>prod</code> (PostgreSQL).</p>
+</div>
+
+<h2>3.5 Migrations</h2>
+<p>Uma <strong>migration</strong> é um arquivo SQL numerado que descreve <em>uma mudança</em> no banco: criar uma tabela, adicionar uma
+  coluna, inserir dados iniciais. A ferramenta <strong>Flyway</strong> roda as migrations em ordem quando o sistema sobe e anota numa tabela
+  própria (<code>flyway_schema_history</code>) quais já rodaram. Assim, qualquer computador chega exatamente ao mesmo banco, e a história
+  das mudanças fica guardada junto com o código.</p>
+<ul>
+  <li>O nome segue o padrão <code>V</code> + número + <code>__</code> + descrição: <code>V6__criar_demanda.sql</code>.</li>
+  <li><strong>Regra de ouro:</strong> nunca editar uma migration que já rodou. Se precisar mudar, cria-se a próxima (<code>V12__...</code>).</li>
+</ul>
+<div class="caixa codigo-nosso"><span class="titulo">No nosso código</span>
+  <p>As 11 migrations ficam em <code>src/main/resources/db/migration</code>. O Hibernate está configurado com
+    <code>ddl-auto: validate</code>: ele <em>não</em> cria tabelas, só confere se as classes Java batem com as tabelas que o Flyway criou.
+    Se alguém esquecer uma migration, o sistema avisa na hora de subir.</p>
+</div>
+
+<h2>3.6 Entidades, JPA e Hibernate</h2>
+<p>No Java trabalhamos com objetos (<code>Demanda</code>, <code>Usuario</code>); no banco, com tabelas. O <strong>JPA</strong> é o padrão que
+  liga uma coisa à outra, e o <strong>Hibernate</strong> é quem faz esse trabalho por baixo. Uma classe marcada com <code>@Entity</code>
+  vira uma tabela; cada atributo vira uma coluna. O nome <code>criadaEm</code> no Java vira <code>criada_em</code> no banco automaticamente.</p>
+
+<h2>3.7 Hash de senha (BCrypt)</h2>
+<p>Guardar a senha das pessoas como texto seria perigoso: se alguém copiasse o banco, teria todas as senhas. Também não basta
+  <strong>criptografar</strong>, porque criptografia é reversível: quem tem a chave volta ao texto original. Por isso senhas são guardadas
+  como <strong>hash</strong>.</p>
+<div class="colunas">
+  <div class="caixa"><span class="titulo">Criptografia</span><p>Mão dupla. Texto → código → texto, usando uma chave. Serve para mensagens que precisam ser lidas depois.</p></div>
+  <div class="caixa"><span class="titulo">Hash</span><p>Mão única. Texto → código, e não tem volta. Serve para conferir: se a senha digitada gera o mesmo código, ela está certa.</p></div>
+</div>
+<p>O <strong>BCrypt</strong> é um algoritmo de hash feito para senhas. Ele tem dois truques:</p>
+<ul>
+  <li><strong>Sal (salt)</strong>: antes de calcular, ele mistura um valor aleatório à senha. Duas pessoas com a senha "demo1234" ficam com hashes diferentes, o que impede o uso de tabelas prontas de senhas comuns.</li>
+  <li><strong>Custo</strong>: ele é lento de propósito (o custo padrão é 10, ou seja, 2<sup>10</sup> rodadas). Para quem faz login, é imperceptível; para quem tenta adivinhar bilhões de senhas, fica caro demais.</li>
+</ul>
+
+<div class="diagrama">
+<svg viewBox="0 0 760 150" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif" font-size="13">
+  <defs><marker id="s3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#5b6168"/></marker></defs>
+  <g text-anchor="middle">
+    <rect x="5" y="20" width="150" height="44" rx="8" fill="#f6f4f1" stroke="#8a9096"/><text x="80" y="47" font-family="Consolas, monospace">demo1234</text>
+    <rect x="215" y="12" width="150" height="60" rx="8" fill="#fff1e8" stroke="#c2410c"/><text x="290" y="38" font-weight="700">BCrypt</text><text x="290" y="56" font-size="11" fill="#5b6168">+ sal aleatório, custo 10</text>
+    <rect x="425" y="20" width="330" height="44" rx="8" fill="#e0ecff" stroke="#1e40af"/><text x="590" y="47" font-family="Consolas, monospace" font-size="11.5">$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZ…</text>
+  </g>
+  <g stroke="#5b6168" stroke-width="1.6" marker-end="url(#s3)"><line x1="155" y1="42" x2="211" y2="42"/><line x1="365" y1="42" x2="421" y2="42"/></g>
+  <g font-size="11.5" fill="#5b6168">
+    <text x="425" y="88"><tspan font-family="Consolas, monospace" fill="#1e40af">$2a$</tspan> = versão do BCrypt</text>
+    <text x="425" y="106"><tspan font-family="Consolas, monospace" fill="#1e40af">10$</tspan> = custo (2¹⁰ rodadas)</text>
+    <text x="425" y="124">22 caracteres seguintes = o sal; o resto = o hash (60 no total)</text>
+    <text x="5" y="100">No login, o BCrypt pega o sal guardado, recalcula</text>
+    <text x="5" y="118">com a senha digitada e compara os resultados.</text>
+  </g>
+</svg>
+<div class="pequeno">Figura 3 — O que fica guardado na coluna <code>usuario.senha_hash</code>. A senha original nunca é salva.</div>
+</div>
+
+<div class="caixa codigo-nosso"><span class="titulo">No nosso código</span>
+<pre><code><span class="com">// SecurityConfig.java — o Spring Security usa este "codificador" em todo o sistema.</span>
+<span class="ann">@Bean</span>
+<span class="kw">public</span> PasswordEncoder passwordEncoder() {
+    <span class="kw">return new</span> BCryptPasswordEncoder();
+}
+
+<span class="com">// UsuarioService.java — no cadastro, guardamos só o hash.</span>
+usuario.setSenhaHash(passwordEncoder.encode(form.getSenha()));
+
+<span class="com">// No login, o próprio Spring Security chama passwordEncoder.matches(senhaDigitada, hashGuardado).</span></code></pre>
+  <p>A senha tem no mínimo 8 e no máximo 72 caracteres (o BCrypt só considera os primeiros 72 bytes). Um teste automático confere
+    que o hash começa com <code>$2a$</code> e que a senha original não aparece em lugar nenhum.</p>
+</div>
+
+<h2>3.8 Sessão, cookies e CSRF</h2>
+<p>Depois do login, o servidor cria uma <strong>sessão</strong> (uma "ficha" de quem está logado) e manda para o navegador um
+  <strong>cookie</strong> com o número dessa ficha. Em cada requisição seguinte o navegador devolve o cookie, e o servidor sabe quem é.
+  No Denarco a sessão expira depois de 30 minutos sem uso.</p>
+<p><strong>CSRF</strong> (falsificação de requisição) é um ataque em que um site malicioso tenta fazer o seu navegador enviar um POST
+  para o Denarco usando a sua sessão. A defesa é um <strong>token CSRF</strong>: um código secreto que o servidor coloca em cada
+  formulário e confere em todo POST. Um site de fora não consegue ler esse código, então o pedido falso é recusado.</p>
+<div class="caixa codigo-nosso"><span class="titulo">No nosso código</span>
+  <p>O Thymeleaf coloca o token sozinho em todo <code>&lt;form th:action="..."&gt;</code>. Para as chamadas feitas por JavaScript
+    (como marcar o tutorial como visto), o token vai numa tag <code>&lt;meta name="csrf-token"&gt;</code> no cabeçalho e é enviado
+    no cabeçalho da requisição.</p>
+</div>
+
+<!-- ===================== 4. ORGANIZAÇÃO ===================== -->
+<h1><span class="num">4</span>Como o código está organizado</h1>
+<pre><code>denarco/
+├── pom.xml                       <span class="com">← dependências do projeto (Maven)</span>
+├── PLANO_DE_IMPLEMENTACAO.md     <span class="com">← o plano das sprints e a auditoria</span>
+├── README.md                     <span class="com">← como rodar</span>
+└── src/
+    ├── main/java/br/com/denarco/
+    │   ├── DenarcoApplication.java   <span class="com">← ponto de partida (método main)</span>
+    │   ├── config/        <span class="com">← segurança, admin inicial, dados de demonstração, tarefas agendadas</span>
+    │   ├── controller/    <span class="com">← rotas e telas (13 classes) — api/ guarda as rotas que devolvem JSON</span>
+    │   ├── service/       <span class="com">← regras de negócio (15 classes)</span>
+    │   ├── repository/    <span class="com">← acesso ao banco (9 interfaces)</span>
+    │   ├── model/         <span class="com">← entidades e enums (18 classes)</span>
+    │   ├── dto/           <span class="com">← formulários e respostas (17 classes)</span>
+    │   ├── security/      <span class="com">← como o login encontra o usuário</span>
+    │   └── exception/     <span class="com">← erros de negócio e "não encontrado"</span>
+    ├── main/resources/
+    │   ├── application.yml       <span class="com">← configurações e perfis (dev, prod, https)</span>
+    │   ├── db/migration/         <span class="com">← V1 a V11 (Flyway)</span>
+    │   ├── templates/            <span class="com">← as telas em HTML (Thymeleaf)</span>
+    │   └── static/               <span class="com">← CSS, JavaScript, ícone e bibliotecas (vendor/)</span>
+    └── test/java/br/com/denarco/ <span class="com">← 12 classes com 49 testes automáticos</span></code></pre>
+<p>São cerca de 5.600 linhas de Java e 2.800 linhas de telas, CSS e JavaScript, com comentários onde explicam o <em>porquê</em> de
+  uma decisão — e não o óbvio.</p>
+
+<h3>O caminho de uma ação, do clique ao banco</h3>
+<p>Quando a Maria toca em <strong>Enviar demanda</strong>:</p>
+<ol>
+  <li>O navegador faz um <code>POST /demandas</code> com os campos do formulário e a foto.</li>
+  <li>O Spring Security confere o cookie (Maria está logada?) e o token CSRF.</li>
+  <li><code>DemandaController.registrar</code> recebe os dados num <code>NovaDemandaForm</code> e o <code>@Valid</code> confere as regras do formulário (categoria escolhida, descrição preenchida).</li>
+  <li><code>DemandaService.registrar</code> aplica as regras: exige um local, descobre o setor pela categoria, trata a foto, calcula a prioridade, salva, gera o protocolo e grava o primeiro passo da linha do tempo.</li>
+  <li><code>DemandaRepository.save</code> transforma o objeto em <code>INSERT</code> no banco.</li>
+  <li>O controller responde com um <em>redirect</em> para <code>/demandas/ARC-...</code>, e a página da demanda mostra "Demanda registrada!".</li>
+</ol>
+
+<!-- ===================== 5. BANCO ===================== -->
+<h1><span class="num">5</span>O banco de dados e as migrations</h1>
+
+<div class="diagrama">
+<svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" font-family="Segoe UI, sans-serif" font-size="12">
+  <g stroke="#8a9096" stroke-width="1.4" fill="none">
+    <line x1="140" y1="60" x2="300" y2="60"/><line x1="140" y1="60" x2="140" y2="150"/><line x1="140" y1="195" x2="300" y2="195"/>
+    <line x1="460" y1="60" x2="600" y2="60"/><line x1="380" y1="85" x2="380" y2="170"/><line x1="460" y1="195" x2="600" y2="195"/>
+    <line x1="460" y1="220" x2="600" y2="280"/><line x1="70" y1="215" x2="70" y2="265"/><line x1="140" y1="215" x2="300" y2="285"/>
+    <line x1="230" y1="60" x2="230" y2="35"/><line x1="230" y1="35" x2="660" y2="35"/><line x1="660" y1="35" x2="660" y2="40"/>
+  </g>
+  <g text-anchor="middle">
+    <rect x="10" y="150" width="130" height="65" rx="8" fill="#fff1e8" stroke="#c2410c"/><text x="75" y="172" font-weight="700">usuario</text><text x="75" y="190" font-size="10.5" fill="#5b6168">perfil, setor,</text><text x="75" y="204" font-size="10.5" fill="#5b6168">senha_hash</text>
+    <rect x="300" y="35" width="160" height="50" rx="8" fill="#fff1e8" stroke="#c2410c"/><text x="380" y="57" font-weight="700">setor</text><text x="380" y="74" font-size="10.5" fill="#5b6168">Iluminação, Drenagem...</text>
+    <rect x="600" y="40" width="150" height="50" rx="8" fill="#fff1e8" stroke="#c2410c"/><text x="675" y="62" font-weight="700">categoria</text><text x="675" y="79" font-size="10.5" fill="#5b6168">setor padrão, prazo</text>
+    <rect x="300" y="170" width="160" height="65" rx="8" fill="#e0ecff" stroke="#1e40af"/><text x="380" y="193" font-weight="700">demanda</text><text x="380" y="210" font-size="10.5" fill="#5b6168">status, prioridade,</text><text x="380" y="224" font-size="10.5" fill="#5b6168">local, protocolo</text>
+    <rect x="600" y="170" width="150" height="50" rx="8" fill="#fff1e8" stroke="#c2410c"/><text x="675" y="192" font-weight="700">historico_demanda</text><text x="675" y="209" font-size="10.5" fill="#5b6168">linha do tempo</text>
+    <rect x="600" y="260" width="150" height="50" rx="8" fill="#fff1e8" stroke="#c2410c"/><text x="675" y="282" font-weight="700">apoio</text><text x="675" y="299" font-size="10.5" fill="#5b6168">"ainda presente"</text>
+    <rect x="10" y="265" width="130" height="55" rx="8" fill="#f6f4f1" stroke="#8a9096"/><text x="75" y="285" font-size="11" font-weight="700">token_redefinicao</text><text x="75" y="300" font-size="11" font-weight="700">_senha</text>
+    <rect x="300" y="265" width="160" height="55" rx="8" fill="#f6f4f1" stroke="#8a9096"/><text x="380" y="287" font-weight="700">convite</text><text x="380" y="304" font-weight="700">alteracao_perfil</text>
+  </g>
+  <g font-size="10" fill="#5b6168">
+    <text x="190" y="54">lotação</text><text x="500" y="54">setor padrão</text><text x="175" y="188">registra / executa</text><text x="390" y="130">é responsável</text>
+    <text x="500" y="188">tem passos</text><text x="500" y="262">recebe</text><text x="400" y="30">classifica (categoria → demanda)</text>
+  </g>
+</svg>
+<div class="pequeno">Figura 4 — As tabelas principais e como se ligam (cada linha é uma chave estrangeira). Uma demanda pertence a uma categoria e a um setor, foi registrada por um usuário, pode ter um responsável, tem vários passos no histórico e vários apoios.</div>
+</div>
+
+<h2>5.1 As 11 migrations</h2>
+<table>
+  <tr><th style="width:36%">Arquivo</th><th>O que faz</th><th style="width:10%">Sprint</th></tr>
+  <tr><td><code>V1__criar_setor.sql</code></td><td>Tabela dos setores da Prefeitura (nome único, ativo).</td><td>1</td></tr>
+  <tr><td><code>V2__criar_usuario.sql</code></td><td>Tabela de usuários: nome, e-mail único, <strong>senha_hash</strong>, telefone, perfil, área de atuação, situação da conta (ATIVA/PENDENTE), setor e se já viu o tutorial.</td><td>1</td></tr>
+  <tr><td><code>V3__criar_token_redefinicao_senha.sql</code></td><td>Tokens do "esqueci minha senha": código, dono, validade e se já foi usado.</td><td>1</td></tr>
+  <tr><td><code>V4__inserir_setores_iniciais.sql</code></td><td>Os 5 setores do caderno: Pavimentação, Iluminação pública, Limpeza urbana, Drenagem e Conservação de espaços públicos.</td><td>1</td></tr>
+  <tr><td><code>V5__criar_categoria.sql</code></td><td>Tipos de problema com ícone, <strong>setor padrão</strong> (encaminhamento automático) e prazo sugerido; insere os 11 tipos iniciais.</td><td>2</td></tr>
+  <tr><td><code>V6__criar_demanda.sql</code></td><td>A tabela central: protocolo, categoria, setor, autor, responsável, descrição, status, urgência, alcance, risco, canal, quem ligou, latitude/longitude, endereço, bairro, foto, prioridade, apoios, prazo e datas.</td><td>2</td></tr>
+  <tr><td><code>V7__criar_historico_demanda.sql</code></td><td>A linha do tempo. Só recebe inserções: nunca é alterada nem apagada (é a trilha de auditoria).</td><td>2</td></tr>
+  <tr><td><code>V8__criar_apoio.sql</code></td><td>Os apoios, com uma <strong>restrição única</strong> (demanda, usuário): cada pessoa apoia no máximo uma vez.</td><td>2</td></tr>
+  <tr><td><code>V9__criar_convite.sql</code></td><td>Convites: e-mail, perfil e setor autorizados por quem convidou.</td><td>3</td></tr>
+  <tr><td><code>V10__criar_alteracao_perfil.sql</code></td><td>Auditoria de acesso: quem mudou o perfil de quem, de qual para qual, e quando.</td><td>3</td></tr>
+  <tr><td><code>V11__criar_indices.sql</code></td><td>Índices nas colunas mais filtradas (status, setor, categoria, bairro, data, local). Índice é como o índice de um livro: deixa as buscas rápidas mesmo com milhares de linhas.</td><td>4</td></tr>
+</table>
+
+<div class="caixa codigo-nosso"><span class="titulo">Exemplo: a migration V8</span>
+<pre><code><span class="kw">CREATE TABLE</span> apoio (
+    id         <span class="kw">BIGINT GENERATED BY DEFAULT AS IDENTITY PRIMARY KEY</span>,
+    demanda_id <span class="kw">BIGINT</span>    <span class="kw">NOT NULL REFERENCES</span> demanda (id),
+    usuario_id <span class="kw">BIGINT</span>    <span class="kw">NOT NULL REFERENCES</span> usuario (id),
+    criado_em  <span class="kw">TIMESTAMP NOT NULL</span>,
+    <span class="com">-- Cada pessoa apoia uma demanda no máximo uma vez.</span>
+    <span class="kw">CONSTRAINT</span> uk_apoio_demanda_usuario <span class="kw">UNIQUE</span> (demanda_id, usuario_id)
+);</code></pre>
+  <p><code>PRIMARY KEY</code> é a chave primária; <code>REFERENCES</code> cria a chave estrangeira; <code>GENERATED ... AS IDENTITY</code>
+    faz o banco numerar sozinho; <code>UNIQUE</code> garante, no próprio banco, que não haja apoio repetido.</p>
+</div>
+
+<h2>5.2 Decisões de banco que valem explicar</h2>
+<ul>
+  <li><strong>O contador de apoios fica na demanda</strong> (<code>total_apoios</code>): ordenar "as mais apoiadas" não precisa contar a tabela de apoios inteira a cada tela.</li>
+  <li><strong>O protocolo é gerado depois de salvar</strong>, porque usa o <code>id</code> que o banco acabou de criar: <code>ARC-2026-000123</code>.</li>
+  <li><strong>Setores e tipos de problema nunca são apagados</strong>, só desativados: apagar quebraria o histórico das demandas antigas.</li>
+  <li><strong>A foto não fica no banco</strong>: o banco guarda só o nome do arquivo; a imagem fica na pasta <code>dados/fotos</code>, fora do site público.</li>
+</ul>
+
+<!-- ===================== 6. MODEL ===================== -->
+<h1><span class="num">6</span>Model: entidades e enums</h1>
+<p>O pacote <code>model</code> descreve <strong>o que existe</strong> no sistema. Há dois tipos de classe:</p>
+<ul>
+  <li><strong>Entidades</strong> (<code>@Entity</code>): viram tabelas. Cada objeto é uma linha.</li>
+  <li><strong>Enums</strong>: listas fixas de valores possíveis (os perfis, as situações de uma demanda). No banco são guardados como texto (<code>@Enumerated(EnumType.STRING)</code>), o que deixa o banco fácil de ler.</li>
+</ul>
+<pre><code><span class="com">/** Um problema relatado (buraco, poste apagado...), com local, situação e prioridade. */</span>
+<span class="ann">@Entity</span>
+<span class="kw">public class</span> Demanda {
+    <span class="ann">@Id</span> <span class="ann">@GeneratedValue</span>(strategy = GenerationType.IDENTITY)
+    <span class="kw">private</span> Long id;                 <span class="com">// chave primária, numerada pelo banco</span>
+    <span class="kw">private</span> String protocolo;
+    <span class="ann">@ManyToOne</span> <span class="kw">private</span> Categoria categoria;  <span class="com">// chave estrangeira categoria_id</span>
+    <span class="ann">@ManyToOne</span> <span class="kw">private</span> Setor setor;
+    <span class="ann">@Enumerated</span>(EnumType.STRING) <span class="kw">private</span> StatusDemanda status;
+    ...
+    <span class="kw">public boolean</span> isAtrasada() {
+        <span class="kw">return</span> prazo != <span class="kw">null</span> &amp;&amp; status.isEmAberto() &amp;&amp; LocalDate.now().isAfter(prazo);
+    }
+}</code></pre>
+<p><code>@ManyToOne</code> quer dizer "muitas demandas para uma categoria": é a chave estrangeira do capítulo 5 vista do lado do Java.</p>
+
+<h2>6.1 Entidades</h2>
+<table>
+  <tr><th style="width:24%">Classe</th><th>O que representa e o que tem de especial</th></tr>
+  <tr><td><code>Usuario</code></td><td>Qualquer pessoa do sistema. Guarda o <strong>hash</strong> da senha (nunca a senha), o perfil, a área de atuação (só para contas corporativas), o setor e se já viu o tutorial. <code>isPendente()</code> diz se a conta corporativa espera aprovação.</td></tr>
+  <tr><td><code>Setor</code></td><td>Setor da Prefeitura que atende um tipo de serviço. Pode ser desativado.</td></tr>
+  <tr><td><code>Categoria</code></td><td>Tipo de problema (ex.: Poste apagado): ícone, <strong>setor padrão</strong> (para onde a demanda vai sozinha) e prazo sugerido em dias.</td></tr>
+  <tr><td><code>Demanda</code></td><td>O coração do sistema. Além dos dados, tem métodos úteis para as telas: <code>isAtrasada()</code>, <code>getFaixaPrioridade()</code> (Alta ≥ 60, Média 35–59, Baixa &lt; 35), <code>getClassePrioridade()</code> (a cor da etiqueta) e <code>getLocalResumido()</code> (bairro, ou endereço, ou "Local não informado").</td></tr>
+  <tr><td><code>HistoricoDemanda</code></td><td>Um passo da linha do tempo: quem fez, o quê (tipo), quando e uma foto opcional. Depois de salvo, nunca muda.</td></tr>
+  <tr><td><code>Apoio</code></td><td>Um "ainda presente": uma pessoa confirmando que o problema continua.</td></tr>
+  <tr><td><code>TokenRedefinicaoSenha</code></td><td>O código do link de "esqueci minha senha". <code>isValido()</code> = ainda não usado e dentro dos 30 minutos.</td></tr>
+  <tr><td><code>Convite</code></td><td>Autorização prévia para um e-mail entrar com perfil e setor definidos. <code>isPendente()</code> = nem usado nem cancelado.</td></tr>
+  <tr><td><code>AlteracaoPerfil</code></td><td>Registro de auditoria: quem mudou o perfil de quem, de qual para qual, e quando.</td></tr>
+</table>
+
+<h2>6.2 Enums</h2>
+<table>
+  <tr><th style="width:24%">Enum</th><th>Valores e regra</th></tr>
+  <tr><td><code>Perfil</code></td><td>CIDADAO, SERVIDOR, GESTOR, ADMIN — <strong>nesta ordem</strong>, porque a ordem é usada para comparar níveis: <code>acimaDe(outro)</code> e <code>peloMenos(outro)</code> decidem quem pode promover quem.</td></tr>
+  <tr><td><code>Atuacao</code></td><td>Atendimento e triagem, Equipe de campo, Gestão de secretaria, Planejamento e controle (o público-alvo do desafio). Cada uma sugere um perfil a quem for aprovar.</td></tr>
+  <tr><td><code>StatusConta</code></td><td>ATIVA ou PENDENTE (conta corporativa esperando aprovação).</td></tr>
+  <tr><td><code>StatusDemanda</code></td><td>ABERTA, ENCAMINHADA, EM_ANDAMENTO, CONCLUIDA, CANCELADA. O método <code>podeMudarPara(novo)</code> é o diagrama da Figura 1 em código; <code>emAberto()</code> devolve as três primeiras.</td></tr>
+  <tr><td><code>Urgencia</code></td><td>Baixa (10 pontos), Média (20), Alta (35). Os pontos entram na prioridade.</td></tr>
+  <tr><td><code>Alcance</code></td><td>Um ponto ou imóvel (5), Uma rua (10), Bairro ou mais (20).</td></tr>
+  <tr><td><code>Canal</code></td><td>APP (site), TELEFONE, PRESENCIAL, WHATSAPP — guardar o canal é o que permite juntar todos numa base só.</td></tr>
+  <tr><td><code>TipoHistorico</code></td><td>CRIACAO, ENCAMINHAMENTO, STATUS, PROVIDENCIA, PRIORIDADE, CANCELAMENTO, CONCLUSAO — cada um com o ícone da linha do tempo.</td></tr>
+  <tr><td><code>MotivoCancelamento</code></td><td>Duplicada, Problema não encontrado no local, Não é responsabilidade da Prefeitura.</td></tr>
+</table>
+
+<!-- ===================== 7. REPOSITORY ===================== -->
+<h1><span class="num">7</span>Repository: falando com o banco</h1>
+<p>Um repository é uma <strong>interface</strong>: a gente só declara os métodos, e o <strong>Spring Data JPA</strong> escreve o SQL. Existem dois jeitos:</p>
+<ul>
+  <li><strong>Pelo nome do método</strong>: <code>findByEmail(String email)</code> vira <code>SELECT ... WHERE email = ?</code>. Palavras como <code>findBy</code>, <code>And</code>, <code>OrderBy</code>, <code>countBy</code>, <code>existsBy</code> e <code>Top8</code> são entendidas automaticamente.</li>
+  <li><strong>Com <code>@Query</code></strong>: quando a consulta é mais elaborada, escrevemos em <strong>JPQL</strong>, que é parecido com SQL mas fala de classes e atributos Java (<code>d.categoria.nome</code>) em vez de tabelas e colunas.</li>
+</ul>
+<p>Todo repository herda de <code>JpaRepository</code>, que já traz <code>save</code>, <code>findById</code>, <code>findAll</code>, <code>delete</code> e <code>count</code>.</p>
+<div class="caixa codigo-nosso"><span class="titulo">Exemplo: contar demandas por tipo de problema (usado no painel)</span>
+<pre><code><span class="ann">@Query</span>(<span class="str">"""
+        select new br.com.denarco.dto.Contagem(d.categoria.nome, count(d)) from Demanda d
+        where (:setorId is null or d.setor.id = :setorId) and d.status in :status
+        group by d.categoria.nome
+        order by count(d) desc
+        """</span>)
+List&lt;Contagem&gt; contarPorCategoria(<span class="ann">@Param</span>(<span class="str">"setorId"</span>) Long setorId,
+                                   <span class="ann">@Param</span>(<span class="str">"status"</span>) Collection&lt;StatusDemanda&gt; status);</code></pre>
+  <p>A conta é feita <strong>no banco</strong> (<code>count</code> + <code>group by</code>), não num laço no Java: é muito mais rápido.
+    O truque <code>(:setorId is null or ...)</code> deixa o filtro opcional: sem setor, conta a cidade toda.
+    Os parâmetros (<code>:setorId</code>) são sempre separados do texto da consulta, o que protege contra <em>SQL injection</em>.</p>
+</div>
+
+<table>
+  <tr><th style="width:30%">Repository</th><th>Métodos principais e para que servem</th></tr>
+  <tr><td><code>UsuarioRepository</code></td><td><code>findByEmail</code> (login), <code>existsByEmail</code> (e-mail repetido), <code>existsByPerfil</code> (já existe admin?), listas de pendentes, da equipe e de possíveis responsáveis de um setor.</td></tr>
+  <tr><td><code>SetorRepository</code></td><td>Setores ativos em ordem alfabética; busca por nome.</td></tr>
+  <tr><td><code>CategoriaRepository</code></td><td>Categorias ativas; busca por nome.</td></tr>
+  <tr><td><code>DemandaRepository</code></td><td>O maior: busca por protocolo, demandas de um autor, as mais apoiadas, <code>buscarNaRegiao</code> (um "quadrado" de latitude/longitude em volta de um ponto), <code>buscarFila</code> (a fila com filtros opcionais e paginação), contagens do resumo, dados do painel, pontos do mapa e <code>buscarConsulta</code> (a consulta em linguagem simples).</td></tr>
+  <tr><td><code>HistoricoDemandaRepository</code></td><td>A linha do tempo de uma demanda, em ordem.</td></tr>
+  <tr><td><code>ApoioRepository</code></td><td>O apoio de uma pessoa numa demanda; <code>idsApoiados</code> descobre, numa consulta só, quais demandas de uma lista a pessoa já apoiou (para pintar o botão).</td></tr>
+  <tr><td><code>TokenRedefinicaoSenhaRepository</code></td><td>Busca o token do link.</td></tr>
+  <tr><td><code>ConviteRepository</code></td><td>O convite pendente mais recente de um e-mail; convites pendentes (todos ou de um setor).</td></tr>
+  <tr><td><code>AlteracaoPerfilRepository</code></td><td>As 10 mudanças de acesso mais recentes (todas ou de um setor).</td></tr>
+</table>
+
+<!-- ===================== 8. SERVICE ===================== -->
+<h1><span class="num">8</span>Service: as regras de negócio</h1>
+<p>É aqui que mora a inteligência do sistema. Um service recebe um pedido do controller, <strong>confere as regras</strong>, usa os repositories
+  para ler e gravar, e devolve o resultado. Quando uma regra não é cumprida, ele lança uma <code>NegocioException</code> com uma mensagem
+  escrita para a pessoa ("Escolha um prazo de hoje em diante."), que o controller mostra na tela.</p>
+
+<h3><code>UsuarioService</code> — contas</h3>
+<ul>
+  <li><code>cadastrarCidadao</code>: confere se o e-mail já existe, guarda o <strong>hash</strong> da senha e cria a conta ATIVA como cidadão.</li>
+  <li><code>cadastrarCorporativo</code>: cria a conta como cidadão <strong>PENDENTE</strong>, com a área de atuação e o setor pedidos. Se existe um <strong>convite</strong> para aquele e-mail, a conta já nasce aprovada com o perfil e o setor do convite, e a mudança é registrada.</li>
+  <li><code>normalizarEmail</code>: minúsculas e sem espaços, para "Maria@X.com " e "maria@x.com" serem a mesma conta.</li>
+  <li>Também: <code>criarContaAtiva</code> (admin inicial e dados de demonstração), <code>concluirTutorial</code>, <code>buscar</code>.</li>
+</ul>
+
+<h3><code>SenhaService</code> e <code>EmailService</code> — esqueci minha senha</h3>
+<ul>
+  <li><code>solicitarRedefinicao</code>: cria um token aleatório (UUID) válido por 30 minutos e manda o link por e-mail. Se o e-mail não existe, não faz nada — e a tela mostra a mesma mensagem nos dois casos, <strong>para não revelar quem tem conta</strong>.</li>
+  <li><code>redefinir</code>: só aceita token válido e não usado; troca o hash da senha e marca o token como usado.</li>
+  <li><code>EmailService.enviar</code>: usa o servidor de e-mail configurado. Sem servidor (como na demonstração), mostra o e-mail no console e o link na própria tela.</li>
+</ul>
+
+<h3><code>DemandaService</code> — registrar e consultar demandas</h3>
+<ul>
+  <li><code>registrar</code> (cidadão) e <code>registrarPorAtendente</code> (telefone, balcão, WhatsApp): exigem um local (ponto no mapa <em>ou</em> endereço/referência escritos — se o GPS falhar, ainda dá para registrar), pegam o setor da categoria, tratam a foto, calculam a prioridade, salvam, geram o protocolo e escrevem o primeiro passo da linha do tempo.</li>
+  <li><code>possiveisDuplicadas</code>: demandas abertas da mesma categoria a até <strong>100 metros</strong>. Primeiro o banco filtra um "quadrado" de latitude/longitude (rápido); depois o Java calcula a distância exata com a <strong>fórmula de Haversine</strong>, que considera a curvatura da Terra.</li>
+  <li><code>pertoDe</code>: até 8 demandas de outras pessoas num raio de 2 km (tela "Perto de você").</li>
+  <li><code>podeVerDadosPrivados</code>: regra da LGPD — nome, contato e foto do autor só para o próprio autor, o admin e a equipe do setor responsável.</li>
+  <li><code>recalcularPrioridades</code>: usado toda madrugada, porque os "dias em aberto" mudam a pontuação.</li>
+</ul>
+
+<h3><code>PrioridadeService</code> — a fórmula</h3>
+<table>
+  <tr><th>Fator</th><th>Pontos</th></tr>
+  <tr><td>Urgência</td><td>Baixa 10 · Média 20 · Alta 35 · <strong>Risco à segurança 50</strong></td></tr>
+  <tr><td>Alcance</td><td>Um ponto ou imóvel 5 · Uma rua 10 · Bairro ou mais 20</td></tr>
+  <tr><td>Apoios</td><td>2 por apoio, no máximo 20</td></tr>
+  <tr><td>Tempo em aberto</td><td>1 por dia, no máximo 10</td></tr>
+</table>
+<p><code>explicar</code> devolve cada parte da conta (é o que aparece em "Por que esta prioridade?"), <code>calcular</code> soma, e
+  <code>atualizar</code> grava na demanda — <strong>a não ser que um gestor tenha fixado outro valor</strong>. Os limites existem de propósito:
+  uma demanda muito curtida não pode passar na frente de um problema com risco real.</p>
+<pre><code><span class="com">// Apoios valem no máximo 20 pontos: uma demanda muito apoiada
+// não pode passar na frente de um problema com risco à segurança.</span>
+<span class="kw">private static final int</span> MAXIMO_PONTOS_APOIO = 20;</code></pre>
+
+<h3><code>FotoService</code> — fotos sem dados escondidos</h3>
+<p>Fotos de celular carregam metadados (EXIF) com a localização GPS e o modelo do aparelho. <code>salvar</code> lê a imagem, reduz para no
+  máximo 1600 px e <strong>redesenha</strong> como um JPG novo: o arquivo resultante não tem mais esses dados. O nome do arquivo é um código
+  aleatório, e as fotos ficam fora da pasta pública: só são entregues por um controller que confere a permissão.</p>
+
+<h3><code>HistoricoService</code> — a linha do tempo</h3>
+<p>Só tem <code>registrar</code> e <code>listar</code>. Não existe "editar" nem "apagar" — por isso o histórico serve como prova de quem fez o quê e quando.</p>
+
+<h3><code>ApoioService</code> — "ainda presente"</h3>
+<ul>
+  <li><code>alternar</code>: o primeiro clique apoia, o segundo desfaz. O autor não apoia a própria demanda, e demanda encerrada não recebe apoio. Cada apoio recalcula a prioridade.</li>
+  <li><code>transferirApoio</code>: quando uma demanda é cancelada por ser duplicada, quem a registrou passa a apoiar a original.</li>
+</ul>
+
+<h3><code>AtendimentoService</code> — o trabalho da equipe</h3>
+<p>É o maior service. Primeiro, as <strong>permissões</strong>, que são conferidas com os dados atuais do banco (não só os da sessão):</p>
+<ul>
+  <li><code>enxergaTodosOsSetores</code>: admin, ou gestor sem setor (planejamento e controle).</li>
+  <li><code>podeAtender</code>: servidor ou gestor do setor da demanda (ou quem enxerga todos).</li>
+  <li><code>podeGerir</code>: o mesmo, mas só para gestor ou acima.</li>
+</ul>
+<p>Depois, a <strong>fila</strong> (<code>fila</code> e <code>resumo</code>), com as abas e os filtros, 20 por página, em ordem de prioridade.
+  E as <strong>ações</strong>, cada uma conferindo permissão e situação, mudando a demanda e escrevendo na linha do tempo:</p>
+<table>
+  <tr><th style="width:30%">Método</th><th>O que faz</th></tr>
+  <tr><td><code>encaminhar</code></td><td>Define responsável (tem que ser da equipe do setor) e prazo (de hoje em diante). Aberta → Encaminhada.</td></tr>
+  <tr><td><code>transferirSetor</code></td><td>Muda o setor, com motivo obrigatório; limpa responsável e prazo.</td></tr>
+  <tr><td><code>corrigirClassificacao</code></td><td>Corrige urgência, alcance e risco e recalcula a prioridade, anotando o que mudou.</td></tr>
+  <tr><td><code>fixarPrioridade</code> / <code>voltarPrioridadeAutomatica</code></td><td>O gestor passa por cima da fórmula, com motivo obrigatório; ou volta ao cálculo.</td></tr>
+  <tr><td><code>cancelar</code></td><td>Cancela com motivo; se for duplicada, liga à original e transfere o apoio.</td></tr>
+  <tr><td><code>iniciar</code>, <code>registrarProvidencia</code>, <code>concluir</code></td><td>O caminho de quem executa. Concluir exige dizer o que foi feito, aceita foto e avisa por e-mail quem registrou pelo site.</td></tr>
+  <tr><td><code>podeReabrir</code> / <code>reabrir</code></td><td>O autor reabre em até 7 dias depois de concluída; o gestor do setor, a qualquer momento.</td></tr>
+</table>
+<p>Todas as mudanças de situação passam por <code>mudarStatus</code>, que pergunta ao <code>StatusDemanda.podeMudarPara</code> se aquela
+  passagem é permitida. Ninguém pula etapa.</p>
+
+<h3><code>EquipeService</code> — pessoas, convites e perfis</h3>
+<pre><code><span class="kw">public static boolean</span> podeGerenciar(Usuario ator, Usuario alvo) {
+    <span class="com">// Só gestor ou admin cuida de pessoas, e nunca de si mesmo ou de alguém do mesmo nível.</span>
+    <span class="kw">if</span> (!ator.getPerfil().peloMenos(Perfil.GESTOR) || ator.getId().equals(alvo.getId())
+            || !ator.getPerfil().acimaDe(alvo.getPerfil())) {
+        <span class="kw">return false</span>;
+    }
+    <span class="kw">if</span> (ator.getPerfil() == Perfil.ADMIN || ator.getSetor() == <span class="kw">null</span>) {
+        <span class="kw">return true</span>;
+    }
+    <span class="com">// Gestor de setor: cidadãos (sem setor) ou pessoas do próprio setor.</span>
+    <span class="kw">return</span> alvo.getSetor() == <span class="kw">null</span> || alvo.getSetor().getId().equals(ator.getSetor().getId());
+}</code></pre>
+<ul>
+  <li><code>podeConceder</code>: só se dá perfil abaixo do seu (o admin pode dar admin).</li>
+  <li><code>alterarPerfil</code>, <code>aprovar</code>, <code>recusar</code>: aplicam as regras e registram em <code>AlteracaoPerfil</code>. Um gestor de setor sempre coloca a pessoa no próprio setor, mesmo que peça outro.</li>
+  <li><code>convidar</code> / <code>cancelarConvite</code>: convite para quem ainda não tem conta.</li>
+  <li>Listas da tela Equipe: pedidos pendentes, equipe, convites e últimas mudanças, sempre dentro do alcance de quem está vendo.</li>
+</ul>
+
+<h3><code>PainelService</code>, <code>MapaService</code> e <code>ConsultaService</code> — enxergar o todo</h3>
+<ul>
+  <li><code>PainelService</code>: os quatro números do topo, os dados dos gráficos (por tipo, por semana e por bairro) e o <strong>tempo médio até concluir</strong>, em texto amigável ("2,5 dias", "6 horas").</li>
+  <li><code>MapaService</code>: os pontos do mapa, com <strong>apenas dados públicos</strong> (sem autor, contato ou foto).</li>
+  <li><code>ConsultaService</code>: transforma uma frase em filtros, sem inteligência artificial. Tira acentos e maiúsculas, procura tipos de problema (por um dicionário: "buraco", "poste", "lixo", "bueiro"... e pelos nomes cadastrados), setor, situação ("atrasada", "concluídas", "sem responsável"), período ("hoje", "esta semana", "este mês", "últimos 15 dias"), bairro (entre os que já apareceram) e ordem ("mais apoiadas"). Devolve <strong>o que entendeu</strong> junto com o resultado, para a pessoa conferir. O texto nunca vira SQL: ele só escolhe valores para uma consulta fixa.</li>
+</ul>
+
+<h3><code>SetorService</code> e <code>CategoriaService</code></h3>
+<p>Listar, buscar, criar e ativar/desativar setores e tipos de problema (com setor padrão e prazo entre 1 e 365 dias).</p>
+
+<!-- ===================== 9. CONTROLLER ===================== -->
+<h1><span class="num">9</span>Controller: as rotas do site</h1>
+<p>Um controller liga uma <strong>rota</strong> a um <strong>método Java</strong>. As anotações dizem qual rota cada método atende:</p>
+<ul>
+  <li><code>@GetMapping("/demandas/nova")</code> — atende um GET nesse endereço.</li>
+  <li><code>@PostMapping("/demandas")</code> — atende um POST (envio de formulário).</li>
+  <li><code>@PathVariable</code> — pega um pedaço do endereço (o <code>{id}</code> de <code>/demandas/{id}/apoio</code>).</li>
+  <li><code>@RequestParam</code> — pega um campo do formulário ou da URL (<code>?dias=30</code>).</li>
+  <li><code>@AuthenticationPrincipal UsuarioLogado</code> — entrega quem está logado.</li>
+</ul>
+<p>O método devolve o <strong>nome da tela</strong> (<code>"demanda/nova"</code> = <code>templates/demanda/nova.html</code>) ou um
+  <strong>redirect</strong> (<code>"redirect:/demandas/ARC-..."</code>). Depois de toda ação POST o sistema faz um redirect: assim, se a
+  pessoa recarregar a página, a ação não é repetida. A mensagem "Demanda concluída" viaja no redirect como <strong>atributo flash</strong>,
+  que vive só até a próxima tela.</p>
+<pre><code><span class="ann">@PostMapping</span>(<span class="str">"/demandas"</span>)
+<span class="kw">public</span> String registrar(<span class="ann">@Valid</span> <span class="ann">@ModelAttribute</span>(<span class="str">"form"</span>) NovaDemandaForm form, BindingResult resultado,
+                        <span class="ann">@AuthenticationPrincipal</span> UsuarioLogado logado, Model model, RedirectAttributes redirect) {
+    <span class="kw">if</span> (!resultado.hasErrors()) {
+        <span class="kw">try</span> {
+            Demanda demanda = demandaService.registrar(form, logado.getId());
+            redirect.addFlashAttribute(<span class="str">"criada"</span>, <span class="kw">true</span>);
+            <span class="kw">return</span> <span class="str">"redirect:/demandas/"</span> + demanda.getProtocolo();
+        } <span class="kw">catch</span> (NegocioException e) {
+            resultado.reject(<span class="str">"negocio"</span>, e.getMessage());   <span class="com">// mostra o erro em cima do formulário</span>
+        }
+    }
+    prepararFormulario(model);
+    <span class="kw">return</span> <span class="str">"demanda/nova"</span>;                          <span class="com">// volta ao formulário com os erros</span>
+}</code></pre>
+
+<h2>9.1 Todas as rotas</h2>
+<table>
+  <tr><th style="width:24%">Controller</th><th style="width:36%">Rotas</th><th>Para que serve · quem pode</th></tr>
+  <tr><td><code>AuthController</code></td><td>GET <code>/login</code>, GET <code>/privacidade</code></td><td>Tela de entrar e aviso de privacidade · público. O POST do login é do próprio Spring Security.</td></tr>
+  <tr><td><code>CadastroController</code></td><td>GET/POST <code>/cadastro</code>, GET/POST <code>/cadastro/corporativo</code></td><td>Criar conta de cidadão e conta corporativa · público.</td></tr>
+  <tr><td><code>SenhaController</code></td><td>GET/POST <code>/senha/esqueci</code>, GET/POST <code>/senha/redefinir</code></td><td>Pedir o link e criar a nova senha · público.</td></tr>
+  <tr><td><code>InicioController</code></td><td>GET <code>/</code></td><td>Tela inicial: cidadão vê o seu início; servidor vai para a fila; gestor e admin, para o painel.</td></tr>
+  <tr><td><code>DemandaController</code></td><td>GET <code>/demandas/nova</code>, POST <code>/demandas</code>, GET <code>/demandas/{protocolo}</code>, GET <code>/demandas/minhas</code>, POST <code>/demandas/{id}/apoio</code>, POST <code>/demandas/{id}/reabrir</code>, GET <code>/demandas/{id}/foto</code>, GET <code>/historico/{id}/foto</code></td><td>Registrar, ver detalhes (com as ações da equipe para quem pode), listar as suas, apoiar, reabrir e servir fotos com checagem de permissão · logado.</td></tr>
+  <tr><td><code>DemandaApiController</code></td><td>GET <code>/api/demandas/proximas</code></td><td>JSON do aviso de duplicada (sem dados de quem registrou) · logado.</td></tr>
+  <tr><td><code>TutorialController</code></td><td>POST <code>/tutorial/concluido</code></td><td>Marca o tutorial como visto · logado.</td></tr>
+  <tr><td><code>AtendimentoController</code></td><td>GET <code>/atendimento</code>, GET/POST <code>/atendimento/registrar</code>, POST <code>/atendimento/demandas/{id}/iniciar</code>, <code>.../providencia</code>, <code>.../concluir</code></td><td>Fila, registro por telefone e ações de quem executa · servidor ou acima.</td></tr>
+  <tr><td><code>GestaoController</code></td><td>POST <code>/gestao/demandas/{id}/encaminhar</code>, <code>/transferir</code>, <code>/classificacao</code>, <code>/prioridade</code>, <code>/prioridade/automatica</code>, <code>/cancelar</code>; GET <code>/gestao/equipe</code>; POST <code>/gestao/equipe/{id}/aprovar</code>, <code>/recusar</code>, <code>/perfil</code>; POST <code>/gestao/convites</code>, <code>/gestao/convites/{id}/cancelar</code></td><td>Decisões sobre a demanda e cuidado da equipe · gestor ou acima.</td></tr>
+  <tr><td><code>AdminController</code></td><td>GET <code>/admin/configuracoes</code>; POST <code>/admin/setores</code>, <code>/admin/setores/{id}/ativo</code>, <code>/admin/categorias</code>, <code>/admin/categorias/{id}</code>, <code>/admin/categorias/{id}/ativa</code></td><td>Setores e tipos de problema · admin.</td></tr>
+  <tr><td><code>PainelController</code></td><td>GET <code>/painel</code>, GET <code>/api/painel</code>, GET <code>/consulta</code></td><td>Painel, dados dos gráficos em JSON e consulta em linguagem simples · servidor ou acima.</td></tr>
+  <tr><td><code>MapaController</code></td><td>GET <code>/mapa</code>, GET <code>/api/mapa</code></td><td>Mapa e seus pontos em JSON · logado (só dados públicos).</td></tr>
+  <tr><td><code>DadosGlobais</code></td><td>(nenhuma rota)</td><td>Um <code>@ControllerAdvice</code> que coloca o usuário logado em todas as telas, para o cabeçalho e o menu.</td></tr>
+</table>
+<div class="caixa atencao"><span class="titulo">Defesa em camadas</span>
+  <p>As permissões são conferidas duas vezes: na <strong>rota</strong> (o Spring Security barra um cidadão em <code>/atendimento</code>) e na
+    <strong>regra</strong> (o service confere se aquele servidor é do setor daquela demanda). Assim, mesmo que alguém digite o endereço de uma
+    ação à mão, recebe "acesso negado".</p>
+</div>
+
+<!-- ===================== 10. SECURITY ===================== -->
+<h1><span class="num">10</span>Security: login, senhas e permissões</h1>
+<p>O <strong>Spring Security</strong> é a "portaria" do sistema: toda requisição passa por ele antes de chegar a um controller. Ele confere
+  quem é a pessoa (autenticação) e se ela pode entrar ali (autorização). Toda a configuração está em uma classe, <code>SecurityConfig</code>.</p>
+<pre><code><span class="ann">@Bean</span>
+<span class="kw">public</span> SecurityFilterChain filtroDeSeguranca(HttpSecurity http) <span class="kw">throws</span> Exception {
+    http
+        .authorizeHttpRequests(acesso -&gt; acesso
+            .requestMatchers(<span class="str">"/login"</span>, <span class="str">"/cadastro"</span>, <span class="str">"/cadastro/corporativo"</span>, <span class="str">"/senha/**"</span>,
+                    <span class="str">"/privacidade"</span>, <span class="str">"/error"</span>, <span class="str">"/css/**"</span>, <span class="str">"/js/**"</span>, <span class="str">"/img/**"</span>, <span class="str">"/vendor/**"</span>).permitAll()
+            .requestMatchers(<span class="str">"/admin/**"</span>).hasRole(<span class="str">"ADMIN"</span>)
+            .requestMatchers(<span class="str">"/gestao/**"</span>).hasRole(<span class="str">"GESTOR"</span>)
+            .requestMatchers(<span class="str">"/atendimento/**"</span>, <span class="str">"/painel/**"</span>, <span class="str">"/api/painel/**"</span>, <span class="str">"/consulta/**"</span>).hasRole(<span class="str">"SERVIDOR"</span>)
+            .anyRequest().authenticated())
+        .formLogin(login -&gt; login.loginPage(<span class="str">"/login"</span>).usernameParameter(<span class="str">"email"</span>).passwordParameter(<span class="str">"senha"</span>)
+                .defaultSuccessUrl(<span class="str">"/"</span>, <span class="kw">true</span>).failureUrl(<span class="str">"/login?erro"</span>))
+        .logout(logout -&gt; logout.logoutSuccessUrl(<span class="str">"/login?saiu"</span>));
+    <span class="kw">return</span> http.build();
+}</code></pre>
+
+<h2>10.1 As peças da segurança</h2>
+<table>
+  <tr><th style="width:28%">Peça</th><th>O que faz</th></tr>
+  <tr><td>Rotas públicas e por perfil</td><td>As regras acima. "Todo o resto" exige login.</td></tr>
+  <tr><td><code>RoleHierarchy</code></td><td>ADMIN &gt; GESTOR &gt; SERVIDOR &gt; CIDADAO: quem está acima herda as permissões de baixo (o admin entra em <code>/gestao</code> sem precisar repetir a regra).</td></tr>
+  <tr><td><code>BCryptPasswordEncoder</code></td><td>Calcula e confere os hashes de senha (capítulo 3.7).</td></tr>
+  <tr><td><code>UsuarioDetailsService</code></td><td>Ensina o Spring Security a achar a pessoa pelo e-mail na hora do login.</td></tr>
+  <tr><td><code>UsuarioLogado</code></td><td>O que fica guardado na sessão depois do login: id, nome, e-mail, perfil e setor. Transforma o perfil em "papel" do Spring (<code>ROLE_GESTOR</code>). Mudanças de perfil valem a partir do próximo login.</td></tr>
+  <tr><td>Formulário de login e sessão</td><td>O próprio Spring Security recebe o POST do login, cria a sessão (30 min) e cuida do logout.</td></tr>
+  <tr><td>CSRF</td><td>Ligado por padrão; o token vai em todo formulário (capítulo 3.8).</td></tr>
+  <tr><td>Cabeçalhos de segurança</td><td>O Spring Security já envia cabeçalhos que impedem, por exemplo, que o site seja aberto escondido dentro de outro site.</td></tr>
+</table>
+
+<h2>10.2 Regras de segurança que estão nos services</h2>
+<ul>
+  <li><strong>Conta corporativa nasce pendente</strong>: sem isso qualquer pessoa se cadastraria como servidor e veria dados de cidadãos. Só um gestor do setor (ou o admin) aprova — ou um convite libera.</li>
+  <li><strong>"Esqueci minha senha" não revela quem tem conta</strong> e o link vale 30 minutos e uma única vez.</li>
+  <li><strong>Formulários nunca preenchem entidades direto</strong> (DTOs): um campo "perfil" escondido no cadastro simplesmente não existe no formulário.</li>
+  <li><strong>Escopo por setor</strong>: servidor e gestor só veem e agem nas demandas do próprio setor; isso é conferido com os dados atuais do banco.</li>
+  <li><strong>LGPD</strong>: outros cidadãos nunca veem o autor, o contato ou a foto; o mapa e o aviso de duplicada só têm dados públicos; fotos perdem o GPS.</li>
+  <li><strong>Redirect seguro</strong>: depois de apoiar, o sistema só volta para endereços internos (impede usar o Denarco para mandar alguém a um site falso).</li>
+  <li><strong>Texto de outras pessoas nunca vira código</strong>: no JavaScript, descrições e bairros entram com <code>textContent</code>, não <code>innerHTML</code> (evita <em>XSS</em>).</li>
+  <li><strong>Auditoria</strong>: a linha do tempo e o registro de mudanças de perfil nunca são apagados.</li>
+</ul>
+
+<!-- ===================== 11. DTOs, EXCEÇÕES, CONFIG ===================== -->
+<h1><span class="num">11</span>DTOs, exceções e configurações</h1>
+<h2>11.1 DTOs (pasta <code>dto</code>)</h2>
+<p>DTO quer dizer "objeto de transferência de dados": são classes só para carregar dados de um lado para o outro. Há dois tipos:</p>
+<ul>
+  <li><strong>Formulários</strong> (classes com getters e setters): <code>CadastroForm</code>, <code>CadastroCorporativoForm</code>, <code>RedefinirSenhaForm</code>, <code>NovaDemandaForm</code>, <code>FiltroFila</code>. As anotações de validação moram aqui, com mensagens em português que dizem como corrigir: <code>@NotBlank(message = "Informe seu nome.")</code>, <code>@Email</code>, <code>@Size(min = 8)</code>, <code>@AssertTrue</code> (aceite do aviso de privacidade).</li>
+  <li><strong>Respostas</strong> (<code>record</code>, uma forma curta do Java para objetos só de leitura): <code>ResumoCidadao</code>, <code>ResumoFila</code>, <code>ResumoPainel</code>, <code>DadosGraficos</code>, <code>Contagem</code>, <code>Intervalo</code>, <code>PontoMapa</code>, <code>DemandaProxima</code>, <code>DemandaProximaResposta</code>, <code>ParcelaPrioridade</code>, <code>ResultadoConsulta</code>; e o enum <code>AbaFila</code>.</li>
+</ul>
+<h2>11.2 Exceções</h2>
+<ul>
+  <li><code>NegocioException</code>: uma regra não foi cumprida. A mensagem é para o usuário e aparece na tela.</li>
+  <li><code>NaoEncontradoException</code>: algo pedido pela URL não existe (ou a pessoa não pode ver). Vira a página 404 amigável.</li>
+  <li>Acesso negado usa a exceção do próprio Spring (<code>AccessDeniedException</code>) e vira a página 403. Nenhuma página de erro mostra detalhes técnicos.</li>
+</ul>
+<h2>11.3 Configurações (pasta <code>config</code> e <code>application.yml</code>)</h2>
+<table>
+  <tr><th style="width:26%">Classe ou arquivo</th><th>O que faz</th></tr>
+  <tr><td><code>SecurityConfig</code></td><td>Capítulo 10.</td></tr>
+  <tr><td><code>DadosIniciais</code></td><td>Na primeira execução, cria o administrador a partir de <code>ADMIN_EMAIL</code> e <code>ADMIN_SENHA</code>. Nenhuma senha no código.</td></tr>
+  <tr><td><code>DadosDemo</code></td><td>Só no perfil <code>dev</code>: cria contas, servidores, moradores, 15 demandas, apoios, histórico e um convite — tudo fictício, como pede o caderno para demonstrações.</td></tr>
+  <tr><td><code>TarefasAgendadas</code></td><td>Todo dia às 3h recalcula as prioridades das demandas abertas (<code>@Scheduled</code>).</td></tr>
+  <tr><td><code>Formatador</code></td><td>Textos amigáveis nas telas: "há 3 dias", "80 m", "1,2 km".</td></tr>
+  <tr><td><code>application.yml</code></td><td>Configurações por <strong>perfil</strong>: <code>dev</code> (H2 em arquivo, modo demonstração), <code>prod</code> (PostgreSQL com senha por variável de ambiente), <code>https</code> (porta 8443 com certificado de demonstração) e <code>test</code> (H2 em memória, só para os testes).</td></tr>
+</table>
+
+<!-- ===================== 12. TELAS ===================== -->
+<h1><span class="num">12</span>As telas: Thymeleaf, CSS e JavaScript</h1>
+<h2>12.1 Thymeleaf</h2>
+<p>As telas são arquivos HTML com atributos <code>th:</code> que o <strong>Thymeleaf</strong> preenche no servidor antes de mandar a página:</p>
+<pre><code><span class="com">&lt;!-- repete o card para cada demanda e escreve o nome da categoria --&gt;</span>
+&lt;th:block th:each=<span class="str">"d : ${minhasAbertas}"</span>&gt;
+    &lt;article th:replace=<span class="str">"~{fragmentos :: cartaoDemanda(${d}, null, null, '/')}"</span>&gt;&lt;/article&gt;
+&lt;/th:block&gt;
+&lt;span th:text=<span class="str">"${d.categoria.nome}"</span>&gt;Poste apagado&lt;/span&gt;
+&lt;div th:if=<span class="str">"${usuario.pendente}"</span>&gt;Seu pedido está esperando aprovação...&lt;/div&gt;</code></pre>
+<ul>
+  <li><code>th:text</code> escreve um valor (e já protege contra código malicioso); <code>th:each</code> repete; <code>th:if</code> mostra só se for verdade; <code>th:field</code> liga um campo ao formulário; <code>th:replace</code> inclui um <strong>fragmento</strong>.</li>
+  <li><code>fragmentos.html</code> guarda os pedaços reaproveitados: cabeçalho e menu (que mudam por perfil), barra inferior do celular, card de demanda, item da fila, botão "Ainda presente", mensagens, campos do cadastro e a barra de acessibilidade.</li>
+</ul>
+<table>
+  <tr><th style="width:30%">Pasta de telas</th><th>Telas</th></tr>
+  <tr><td><code>auth/</code></td><td>login, cadastro, cadastro corporativo, esqueci a senha, nova senha, aviso de privacidade</td></tr>
+  <tr><td><code>inicio/</code>, <code>demanda/</code></td><td>início do cidadão; nova demanda (também no modo atendente), detalhe, minhas demandas</td></tr>
+  <tr><td><code>atendimento/</code>, <code>gestao/</code>, <code>admin/</code></td><td>fila; equipe; configurações</td></tr>
+  <tr><td><code>painel/</code>, <code>mapa/</code></td><td>painel e consulta; mapa</td></tr>
+  <tr><td><code>error.html</code></td><td>página amigável para 403, 404 e erros inesperados</td></tr>
+</table>
+
+<h2>12.2 CSS e JavaScript (pasta <code>static</code>)</h2>
+<table>
+  <tr><th style="width:24%">Arquivo</th><th>O que faz</th></tr>
+  <tr><td><code>css/app.css</code></td><td>Cores e tamanhos centralizados em variáveis (mudar uma cor muda todas as telas), letra grande só onde importa, etiquetas de status (sempre cor + texto), versão celular e o modo <strong>alto contraste</strong>.</td></tr>
+  <tr><td><code>js/app.js</code></td><td>A+ / A−, alto contraste (lembrados no navegador) e o botão "mostrar senha".</td></tr>
+  <tr><td><code>js/nova-demanda.js</code></td><td>Revela os passos do formulário, cuida do mapa e do GPS, preenche endereço e bairro pelo OpenStreetMap, procura duplicadas e reduz a foto no celular antes de enviar.</td></tr>
+  <tr><td><code>js/tutorial.js</code></td><td>O tour guiado de cada perfil (Driver.js), com bolinhas de progresso e "Pular tutorial".</td></tr>
+  <tr><td><code>js/painel.js</code></td><td>Busca <code>/api/painel</code> e desenha os gráficos (Chart.js), o ranking de bairros e as tabelas "Ver em tabela".</td></tr>
+  <tr><td><code>js/mapa.js</code></td><td>Busca <code>/api/mapa</code> e desenha os pontos com a prioridade, agrupando os próximos.</td></tr>
+</table>
+<p><strong>Bibliotecas usadas</strong> (todas gratuitas e de código aberto, guardadas dentro do projeto em <code>static/vendor</code> para não depender
+  de internet na apresentação): Bootstrap 5 (layout e componentes), Bootstrap Icons, Leaflet e Leaflet.markercluster (mapa), Chart.js (gráficos)
+  e Driver.js (tutorial). O mapa usa o OpenStreetMap e o widget de Libras é o VLibras do governo federal (esses dois precisam de internet).</p>
+
+<!-- ===================== 13. TESTES ===================== -->
+<h1><span class="num">13</span>Testes automáticos</h1>
+<p>Um <strong>teste automático</strong> é um pedaço de código que usa o sistema e confere se o resultado é o esperado. Rodando
+  <code>mvnw test</code>, os 49 testes executam em menos de um minuto. Se alguém mudar uma regra sem querer, um teste fica vermelho.</p>
+<ul>
+  <li><strong>Testes de unidade</strong> testam uma classe sozinha. As dependências são trocadas por "dublês" (<strong>Mockito</strong>), então não precisam de banco.</li>
+  <li><strong>Testes de integração</strong> sobem o sistema inteiro com um banco em memória. O <strong>MockMvc</strong> simula requisições de cada perfil.</li>
+</ul>
+<table>
+  <tr><th style="width:30%">Classe de teste</th><th style="width:8%">Testes</th><th>O que garante</th></tr>
+  <tr><td><code>DenarcoApplicationTests</code></td><td>1</td><td>O sistema sobe: migrations rodam e entidades batem com as tabelas.</td></tr>
+  <tr><td><code>PermissoesRotasTest</code></td><td>7</td><td>Cada perfil só entra onde pode; servidor não mexe em demanda de outro setor nem pela URL; gestor começa no painel.</td></tr>
+  <tr><td><code>UsuarioServiceTest</code></td><td>4</td><td>Hash BCrypt, e-mail normalizado e único, conta corporativa pendente, setor obrigatório.</td></tr>
+  <tr><td><code>SenhaServiceTest</code></td><td>4</td><td>Token válido troca a senha; expirado ou já usado não; e-mail inexistente não gera token.</td></tr>
+  <tr><td><code>PrioridadeServiceTest</code></td><td>4</td><td>A fórmula (o exemplo 72 do plano), os limites, o risco e a prioridade fixada pelo gestor.</td></tr>
+  <tr><td><code>ApoioServiceTest</code></td><td>4</td><td>Apoiar/desfazer, autor não apoia a própria demanda, encerrada não recebe apoio.</td></tr>
+  <tr><td><code>DemandaServiceTest</code></td><td>2</td><td>Distância (100 m) e formato do protocolo.</td></tr>
+  <tr><td><code>StatusDemandaTest</code></td><td>3</td><td>O diagrama de situações: caminhos permitidos e proibidos.</td></tr>
+  <tr><td><code>AtendimentoServiceTest</code></td><td>7</td><td>Quem atende e quem gere, encaminhar, prazo no passado, concluir sem responsável, aviso ao autor, motivo obrigatório.</td></tr>
+  <tr><td><code>EquipeServiceTest</code></td><td>5</td><td>Quem promove quem, gestor preso ao próprio setor, ninguém mexe em si mesmo.</td></tr>
+  <tr><td><code>ConsultaServiceTest</code></td><td>4</td><td>A frase vira os filtros certos (com e sem acento), servidor não consulta outro setor.</td></tr>
+  <tr><td><code>PainelServiceTest</code></td><td>4</td><td>Tempo médio em dias e horas, período inválido volta para 30 dias.</td></tr>
+</table>
+
+<!-- ===================== 14. QUALIDADE ===================== -->
+<h1><span class="num">14</span>Qualidade: ISO/IEC 25010, acessibilidade e LGPD</h1>
+<p>A <strong>ISO/IEC 25010</strong> (versão 2023) é um modelo de qualidade de software com 9 características. Ela não traz regras
+  prontas; por isso cada característica virou ações concretas no código e uma forma de verificar:</p>
+<table>
+  <tr><th style="width:22%">Característica</th><th>O que fizemos</th><th style="width:30%">Como verificamos</th></tr>
+  <tr><td>Adequação funcional</td><td>Cada requisito do desafio ligado a uma sprint (tabela R01–E06 do plano).</td><td>49 testes; demonstração do ciclo completo.</td></tr>
+  <tr><td>Eficiência de desempenho</td><td>Paginação de 20, índices (V11), contas feitas no banco, fotos reduzidas.</td><td>Telas abrem instantaneamente com os dados de demonstração.</td></tr>
+  <tr><td>Compatibilidade</td><td>HTML padrão, JSON para integrações futuras, PostgreSQL ou H2.</td><td>Testado em telas de celular e computador.</td></tr>
+  <tr><td>Capacidade de interação (usabilidade)</td><td>Até 5 cliques, tutorial por perfil, letra grande, mensagens que dizem como corrigir, A+/A−, alto contraste, VLibras, teclado, cor sempre com texto.</td><td><strong>0 violações</strong> do axe-core (WCAG 2.2 A/AA) em 17 telas, nos dois modos; nenhuma rolagem horizontal a 375 px.</td></tr>
+  <tr><td>Confiabilidade</td><td>Transações, página de erro amigável, registro sem GPS (endereço escrito).</td><td>Testes de integração.</td></tr>
+  <tr><td>Segurança</td><td>BCrypt, perfis + escopo por setor, CSRF, sessão de 30 min, token de uso único, histórico imutável, defesa em camadas.</td><td>Testes de permissão por rota e por regra.</td></tr>
+  <tr><td>Manutenibilidade</td><td>Camadas, nomes em português, comentários de "porquê", migrations versionadas.</td><td>Build e testes com um comando.</td></tr>
+  <tr><td>Flexibilidade</td><td>Configuração por perfil e variáveis de ambiente, setores e tipos editáveis, só software livre.</td><td>Mesmo código em H2 e PostgreSQL; perfil HTTPS.</td></tr>
+  <tr><td>Segurança operacional</td><td>"Há risco à segurança?" leva a prioridade ao máximo e mostra 193 (Bombeiros) e 199 (Defesa Civil); a fórmula só sugere, quem decide é a equipe.</td><td>Teste da fórmula com risco.</td></tr>
+</table>
+<h2>14.1 LGPD em resumo</h2>
+<ul>
+  <li>Coletamos só nome, e-mail e telefone, com aceite do aviso de privacidade.</li>
+  <li>Outros cidadãos nunca veem autor, contato ou foto; o mapa só tem dados públicos.</li>
+  <li>Fotos perdem os metadados de localização; senhas só existem como hash.</li>
+  <li>Demonstrações usam apenas dados fictícios (perfil <code>dev</code>).</li>
+</ul>
+
+<!-- ===================== 15. COMO RODAR ===================== -->
+<h1><span class="num">15</span>Como rodar e apresentar</h1>
+<h2>15.1 Rodar</h2>
+<p>Só é preciso o JDK 21 ou mais novo. No Windows (PowerShell), dentro da pasta do projeto:</p>
+<pre><code>$env:JAVA_HOME = <span class="str">"C:\Program Files\Java\jdk-24"</span>    <span class="com"># ajuste para o seu JDK</span>
+.\mvnw.cmd spring-boot:run                          <span class="com"># abre em http://localhost:8080</span>
+.\mvnw.cmd test                                     <span class="com"># roda os 49 testes</span></code></pre>
+<p>Para começar do zero, pare o sistema e apague a pasta <code>dados/</code>. Para testar o GPS no celular, use o perfil <code>https</code> (o README explica).</p>
+<h2>15.2 Contas de demonstração (senha <code>demo1234</code>)</h2>
+<table>
+  <tr><th>E-mail</th><th>Perfil</th></tr>
+  <tr><td><code>cidadao@demo.com</code></td><td>Cidadã (Maria)</td></tr>
+  <tr><td><code>servidor@demo.com</code></td><td>Servidor de Iluminação pública (João)</td></tr>
+  <tr><td><code>gestor@demo.com</code></td><td>Gestora de Iluminação pública (Ana)</td></tr>
+  <tr><td><code>admin@demo.com</code></td><td>Administrador</td></tr>
+  <tr><td><code>pendente@demo.com</code></td><td>Conta corporativa esperando aprovação (Pedro)</td></tr>
+  <tr><td><code>convidado@demo.com</code></td><td>Ainda sem conta, mas com convite: ao criar a conta corporativa, entra como servidor da Limpeza urbana</td></tr>
+</table>
+<h2>15.3 Roteiro de apresentação (cerca de 7 minutos)</h2>
+<ol>
+  <li><strong>O problema</strong> (30 s): demandas espalhadas, duplicadas, sem histórico.</li>
+  <li><strong>Cidadã</strong> (1,5 min): no celular, registra um poste apagado em 5 cliques; mostra o aviso de duplicada e o "Ainda presente".</li>
+  <li><strong>Gestora</strong> (1,5 min): painel → fila → abre a demanda, vê "Por que esta prioridade?", define responsável e prazo.</li>
+  <li><strong>Servidor</strong> (1 min): inicia, registra providência com foto, conclui.</li>
+  <li><strong>Cidadã</strong> (30 s): vê a linha do tempo completa.</li>
+  <li><strong>Gestão</strong> (1,5 min): mapa com as concentrações; "Pergunte ao Denarco: buracos abertos este mês"; tela Equipe (aprovar o Pedro).</li>
+  <li><strong>Qualidade</strong> (30 s): alto contraste, VLibras, 49 testes, zero violações de acessibilidade, LGPD.</li>
+</ol>
+
+<!-- ===================== 16. GLOSSÁRIO ===================== -->
+<h1><span class="num">16</span>Glossário</h1>
+<table>
+  <tr><th style="width:22%">Termo</th><th>Significado simples</th></tr>
+  <tr><td>Anotação</td><td>Palavra com <code>@</code> que diz ao Spring o papel de uma classe ou método (<code>@Service</code>, <code>@GetMapping</code>).</td></tr>
+  <tr><td>API / JSON</td><td>Rota que devolve dados (em formato JSON) em vez de uma página; usada pelo JavaScript dos gráficos e do mapa.</td></tr>
+  <tr><td>BCrypt</td><td>Algoritmo de hash próprio para senhas: lento de propósito e com sal.</td></tr>
+  <tr><td>Bean</td><td>Objeto criado e gerenciado pelo Spring, que ele entrega para quem pedir.</td></tr>
+  <tr><td>Chave primária / estrangeira</td><td>O <code>id</code> único de cada linha / a coluna que aponta para a linha de outra tabela.</td></tr>
+  <tr><td>Controller</td><td>Classe que recebe as requisições de uma rota e escolhe a resposta.</td></tr>
+  <tr><td>CSRF</td><td>Ataque em que outro site tenta agir em seu nome; bloqueado com um token secreto em cada formulário.</td></tr>
+  <tr><td>DTO</td><td>Classe só para carregar dados (formulários e respostas).</td></tr>
+  <tr><td>Entidade</td><td>Classe Java ligada a uma tabela do banco (<code>@Entity</code>).</td></tr>
+  <tr><td>Enum</td><td>Lista fixa de valores possíveis (os perfis, as situações).</td></tr>
+  <tr><td>Flyway / migration</td><td>Ferramenta que aplica, em ordem, os arquivos SQL que constroem o banco.</td></tr>
+  <tr><td>Fragmento</td><td>Pedaço de tela reaproveitado em várias páginas.</td></tr>
+  <tr><td>H2 / PostgreSQL</td><td>Banco de desenvolvimento (um arquivo, sem instalar) / banco de produção.</td></tr>
+  <tr><td>Hash</td><td>Transformação de mão única: dá para conferir, não dá para desfazer.</td></tr>
+  <tr><td>HTTP / HTTPS</td><td>O "idioma" entre navegador e servidor / o mesmo, criptografado.</td></tr>
+  <tr><td>JPA / Hibernate</td><td>O padrão e a ferramenta que traduzem objetos Java para linhas do banco.</td></tr>
+  <tr><td>JPQL</td><td>Linguagem de consulta parecida com SQL, mas escrita com classes e atributos Java.</td></tr>
+  <tr><td>LGPD</td><td>Lei Geral de Proteção de Dados (Lei 13.709/2018).</td></tr>
+  <tr><td>MVC</td><td>Model–View–Controller: separar dados, telas e quem coordena.</td></tr>
+  <tr><td>Perfil (de configuração)</td><td>Conjunto de configurações para um ambiente: <code>dev</code>, <code>prod</code>, <code>https</code>, <code>test</code>.</td></tr>
+  <tr><td>Protocolo</td><td>O código de cada demanda (<code>ARC-2026-000123</code>), usado para acompanhar.</td></tr>
+  <tr><td>Redirect / flash</td><td>Mandar o navegador para outra página depois de uma ação / mensagem que vive só até a próxima página.</td></tr>
+  <tr><td>Repository</td><td>Interface que acessa o banco; o Spring Data escreve as consultas.</td></tr>
+  <tr><td>Rota</td><td>Endereço que o servidor entende (<code>/atendimento</code>).</td></tr>
+  <tr><td>Sal (salt)</td><td>Valor aleatório misturado à senha antes do hash, para que senhas iguais tenham hashes diferentes.</td></tr>
+  <tr><td>Service</td><td>Classe com as regras de negócio.</td></tr>
+  <tr><td>Sessão / cookie</td><td>A "ficha" de quem está logado no servidor / o número dessa ficha guardado no navegador.</td></tr>
+  <tr><td>Spring Boot / Spring Security</td><td>Bibliotecas que dão a base do site / a portaria de login e permissões.</td></tr>
+  <tr><td>Sprint</td><td>Bloco curto de trabalho com uma entrega que dá para ver funcionando.</td></tr>
+  <tr><td>Thymeleaf</td><td>Ferramenta que preenche as telas HTML com os dados no servidor.</td></tr>
+  <tr><td>Token</td><td>Código secreto e temporário (do link de nova senha, do CSRF).</td></tr>
+  <tr><td>Transação</td><td>Grupo de mudanças no banco que acontece por inteiro ou não acontece (<code>@Transactional</code>).</td></tr>
+  <tr><td>WCAG</td><td>Diretrizes internacionais de acessibilidade na web; usamos o nível AA.</td></tr>
+  <tr><td>XSS</td><td>Ataque que tenta fazer um texto virar código na página de outra pessoa; evitado mostrando texto sempre como texto.</td></tr>
+</table>
+
+<div class="caixa resumo" style="margin-top:8mm">
+  <span class="titulo">Onde aprender mais sobre o projeto</span>
+  <p><code>PLANO_DE_IMPLEMENTACAO.md</code> (o plano, os requisitos do desafio e a auditoria) · <code>README.md</code> (como rodar) ·
+    os comentários no topo de cada classe, que dizem o papel dela em uma ou duas frases.</p>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-BR" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{fragmentos :: head('Mapa')}"></head>
+<body>
+<a class="pular-conteudo" href="#conteudo">Pular para o conteúdo</a>
+<header th:replace="~{fragmentos :: cabecalho}"></header>
+
+<main id="conteudo" class="container py-4">
+    <h1 class="titulo-pagina">Mapa das demandas</h1>
+    <p class="subtitulo">Onde estão os problemas e onde eles se concentram.</p>
+
+    <form id="filtros-mapa" class="row g-2 mb-3 align-items-end">
+        <div class="col-6 col-md-3">
+            <label for="mapa-situacao" class="form-label">Situação</label>
+            <select id="mapa-situacao" name="situacao" class="form-select">
+                <option value="abertas">Em aberto</option>
+                <option value="concluidas">Concluídas</option>
+                <option value="todas">Todas</option>
+            </select>
+        </div>
+        <div class="col-6 col-md-3">
+            <label for="mapa-periodo" class="form-label">Registradas</label>
+            <select id="mapa-periodo" name="dias" class="form-select">
+                <option value="">Em qualquer data</option>
+                <option value="7">Últimos 7 dias</option>
+                <option value="30">Últimos 30 dias</option>
+                <option value="90">Últimos 90 dias</option>
+            </select>
+        </div>
+        <div class="col-md-4">
+            <label for="mapa-categoria" class="form-label">Tipo de problema</label>
+            <select id="mapa-categoria" name="categoriaId" class="form-select">
+                <option value="">Todos</option>
+                <option th:each="c : ${categorias}" th:value="${c.id}" th:text="${c.nome}">Poste apagado</option>
+            </select>
+        </div>
+        <div class="col-md-2">
+            <p class="small fw-semibold mb-2" id="contador-mapa" role="status" aria-live="polite"></p>
+        </div>
+    </form>
+
+    <div id="mapa-territorial" class="mapa mapa-grande" aria-label="Mapa com as demandas da cidade"></div>
+
+    <div class="legenda-mapa mt-2" aria-label="Legenda">
+        <span><span class="pino pino-alta legenda-pino" aria-hidden="true"><span>60</span></span> Prioridade alta</span>
+        <span><span class="pino pino-media legenda-pino" aria-hidden="true"><span>40</span></span> Média</span>
+        <span><span class="pino pino-baixa legenda-pino" aria-hidden="true"><span>20</span></span> Baixa</span>
+        <span><span class="grupo-pinos legenda-pino" aria-hidden="true"><span>5</span></span> Várias demandas juntas (aproxime para ver)</span>
+    </div>
+    <p class="small text-body-secondary mt-1">O número no ponto é a prioridade. O mapa não mostra quem registrou nem fotos.</p>
+</main>
+
+<nav th:replace="~{fragmentos :: barraInferior}"></nav>
+<th:block th:replace="~{fragmentos :: scripts}"></th:block>
+<th:block th:replace="~{fragmentos :: leaflet}"></th:block>
+<link rel="stylesheet" th:href="@{/vendor/markercluster/MarkerCluster.css}">
+<script th:src="@{/vendor/markercluster/leaflet.markercluster.js}"></script>
+<script th:src="@{/js/mapa.js}"></script>
+</body>
+</html>
