@@ -7,10 +7,20 @@ Proposta para o desafio do Desafios PE. O plano completo está em [PLANO_DE_IMPL
 
 Só precisa do **JDK 21 ou mais novo**. O Maven vem junto (`mvnw`) e o banco de desenvolvimento (H2) é um arquivo na pasta `dados/`.
 
+cheque a versão do JDK instaladdo na maquina:
+
+```CMD
+javac -version
+```
+ou
+```CMD
+javac --version
+```
+
 Windows (PowerShell), ajustando o caminho do seu JDK:
 
 ```powershell
-$env:JAVA_HOME = "C:\Program Files\Java\jdk-24"
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-24"#Corrija para a versão do JDK instalada na sua máquina.
 .\mvnw.cmd spring-boot:run
 ```
 
