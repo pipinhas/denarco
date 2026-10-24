@@ -31,6 +31,7 @@ public class MapaService {
         LocalDateTime desde = dias == null ? null : LocalDateTime.now().minusDays(dias);
 
         return demandaRepository.buscarParaMapa(status, categoriaId, desde).stream()
+                .filter(d -> AreaAtendimento.contem(d.getLatitude(), d.getLongitude()))
                 .map(d -> new PontoMapa(d.getId(), d.getProtocolo(), d.getCategoria().getNome(),
                         d.getStatus().getDescricao(), d.getPontuacao(), d.getFaixaPrioridade(),
                         d.getLatitude(), d.getLongitude(), d.getLocalResumido(), d.getTotalApoios(), d.isAtrasada()))

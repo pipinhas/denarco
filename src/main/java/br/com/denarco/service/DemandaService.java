@@ -81,8 +81,8 @@ public class DemandaService {
     }
 
     private Demanda criar(NovaDemandaForm form, Usuario autor, Canal canal, String textoHistorico) {
-        if (!form.temLocal()) {
-            throw new NegocioException("Marque o local no mapa ou escreva o endereço.");
+        if (!AreaAtendimento.contem(form.getLatitude(), form.getLongitude())) {
+            throw new NegocioException("Marque no mapa um local dentro da área de atendimento permitida.");
         }
         Categoria categoria = categoriaService.buscar(form.getCategoriaId());
 

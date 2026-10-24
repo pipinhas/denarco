@@ -7,8 +7,24 @@ import org.springframework.test.util.ReflectionTestUtils;
 import java.time.LocalDateTime;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class DemandaServiceTest {
+
+    @Test
+    void areaAtendimentoIncluiOsLimitesInformados() {
+        assertTrue(AreaAtendimento.contem(-8.25309, -37.14904));
+        assertTrue(AreaAtendimento.contem(-8.49870, -36.89687));
+    }
+
+    @Test
+    void areaAtendimentoRejeitaPontosForaDosLimitesOuInvalidos() {
+        assertFalse(AreaAtendimento.contem(-8.25308, -37.0));
+        assertFalse(AreaAtendimento.contem(-8.4, -37.14905));
+        assertFalse(AreaAtendimento.contem(null, -37.0));
+        assertFalse(AreaAtendimento.contem(Double.NaN, -37.0));
+    }
 
     @Test
     void distanciaEntreDoisPontosProximosEmArcoverde() {

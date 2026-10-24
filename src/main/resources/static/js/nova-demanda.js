@@ -10,8 +10,15 @@
 
     // Centro de Arcoverde, usado antes de a pessoa marcar o local.
     const CENTRO = [-8.4189, -37.0539];
+    const AREA = { sul: -8.49870, norte: -8.25309, oeste: -37.14904, leste: -36.89687 };
     let mapa = null;
     let marcador = null;
+
+    function pontoNaArea(lat, lng) {
+        return Number.isFinite(lat) && Number.isFinite(lng)
+            && lat >= AREA.sul && lat <= AREA.norte
+            && lng >= AREA.oeste && lng <= AREA.leste;
+    }
 
     function categoriaEscolhida() {
         return form.querySelector('input[name="categoriaId"]:checked');
@@ -37,7 +44,9 @@
     // ---------- Passo 2: local ----------
     function iniciarMapa() {
         if (mapa) return;
-        mapa = L.map('mapa').setView(CENTRO, 14);
+        mapa = L.map('mapa')
+            .setMaxBounds(L.latLngBounds([AREA.sul, AREA.oeste], [AREA.norte, AREA.leste]))
+            .setView(CENTRO, 14);
         L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
             maxZoom: 19,
             attribution: '&copy; colaboradores do OpenStreetMap'
@@ -52,6 +61,19 @@
     }
 
     function marcar(lat, lng, centralizar, jaTemEndereco) {
+        if (!pontoNaArea(lat, lng)) {
+            if (marcador) {
+                mapa.removeLayer(marcador);
+                marcador = null;
+            }
+            campoLat.value = '';
+            campoLng.value = '';
+            caixaDuplicada.hidden = true;
+            avisoMapa.textContent = 'Local fora da área atendida. Marque um ponto dentro dos limites do mapa.';
+            avisoMapa.classList.add('text-danger');
+            return;
+        }
+
         if (!marcador) {
             marcador = L.marker([lat, lng], { draggable: true }).addTo(mapa);
             marcador.on('dragend', function () {
@@ -66,6 +88,7 @@
         campoLat.value = lat.toFixed(6);
         campoLng.value = lng.toFixed(6);
         avisoMapa.textContent = 'Local marcado. Se precisar, arraste o marcador.';
+        avisoMapa.classList.remove('text-danger');
         if (!jaTemEndereco) buscarEndereco(lat, lng);
 
         const primeiraVez = revelar(passoDescricao);
@@ -102,6 +125,17 @@
         document.getElementById(id).addEventListener('input', function () {
             revelar(passoDescricao);
         });
+    });
+
+    form.addEventListener('submit', function (evento) {
+        const latitude = Number(campoLat.value);
+        const longitude = Number(campoLng.value);
+        if (!pontoNaArea(latitude, longitude)) {
+            evento.preventDefault();
+            avisoMapa.textContent = 'A demanda só pode ser registrada com um local dentro da área atendida. Marque o ponto no mapa.';
+            avisoMapa.classList.add('text-danger');
+            avisoMapa.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
     });
 
     // Preenche endereço e bairro a partir do ponto (OpenStreetMap). Sem internet, a pessoa digita.

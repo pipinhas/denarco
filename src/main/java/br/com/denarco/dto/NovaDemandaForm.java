@@ -49,13 +49,6 @@ public class NovaDemandaForm {
     @Size(max = 20, message = "Use no máximo 20 caracteres.")
     private String solicitanteTelefone;
 
-    // Precisa de um ponto no mapa ou, se o mapa/GPS falhar, de um endereço ou referência escrita.
-    public boolean temLocal() {
-        return (latitude != null && longitude != null)
-                || (endereco != null && !endereco.isBlank())
-                || (pontoReferencia != null && !pontoReferencia.isBlank());
-    }
-
     public Long getCategoriaId() {
         return categoriaId;
     }
