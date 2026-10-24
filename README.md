@@ -7,7 +7,7 @@ Proposta para o desafio do Desafios PE. O plano completo está em [PLANO_DE_IMPL
 
 Só precisa do **JDK 21 ou mais novo**. O Maven vem junto (`mvnw`) e o banco de desenvolvimento (H2) é um arquivo na pasta `dados/`.
 
-cheque a versão do JDK instaladdo na maquina:
+Verificar a versão do JDK instaladdo na maquina:
 
 ```CMD
 javac -version
@@ -114,13 +114,16 @@ O guia completo do projeto, em linguagem simples, está em [docs/Guia_do_Projeto
 ## Organização do código
 
 ```
-controller/  recebe a requisição e escolhe a tela
-service/     regras de negócio
-repository/  acesso ao banco (Spring Data JPA)
-model/       entidades e enums
-dto/         formulários
-security/    login (Spring Security)
-config/      segurança, admin inicial e dados de demonstração
-resources/db/migration/   migrations do Flyway (nunca editar uma que já rodou)
-resources/templates/      telas (Thymeleaf)
+main
+ | java
+ |  | config/      segurança, admin inicial e dados de demonstração
+ |  | controller/  recebe a requisição e escolhe a tela
+ |  | dto/         formulários
+ |  | model/       entidades e enums
+ |  | repository/  acesso ao banco (Spring Data JPA)
+ |  | security/    login (Spring Security)
+ |  | service/     regras de negócio
+ | resources
+ |  | db/migration/   migrations do Flyway (nunca editar uma que já rodou)
+ |  | templates/      telas (Thymeleaf)
 ```
