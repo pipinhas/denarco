@@ -1,7 +1,7 @@
 # Denarco
 
 Sistema para registrar, encaminhar e acompanhar demandas de serviços públicos de Arcoverde.
-Proposta para o desafio do Desafios PE. O plano completo está em [PLANO_DE_IMPLEMENTACAO.md](PLANO_DE_IMPLEMENTACAO.md).
+Proposta para o desafio do Desafios PE.
 
 ## Como rodar
 
